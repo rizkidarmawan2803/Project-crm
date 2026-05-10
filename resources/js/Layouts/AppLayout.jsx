@@ -92,17 +92,12 @@ export default function AppLayout({ children }) {
             <aside className="fixed top-0 left-0 w-56 h-screen bg-white border-r border-gray-100 flex flex-col z-20">
 
                 {/* Logo */}
-                <div className="px-4 py-4 border-b border-gray-100">
-                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 w-fit">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                            <rect width="16" height="16" rx="3" fill="#1d6fa8"/>
-                            <rect x="3" y="3" width="4" height="4" rx="1" fill="white"/>
-                            <rect x="9" y="3" width="4" height="4" rx="1" fill="white"/>
-                            <rect x="3" y="9" width="4" height="4" rx="1" fill="white"/>
-                            <rect x="9" y="9" width="4" height="4" rx="1" fill="white"/>
-                        </svg>
-                        <span className="text-sm font-semibold text-gray-700">Logo</span>
-                    </div>
+                <div className="px-5 py-4 border-b border-gray-100">
+                    <img
+                        src="/images/logo.png"
+                        alt="Disty CRM"
+                        className="h-8 w-auto object-contain"
+                    />
                 </div>
 
                 {/* Nav Menu */}
