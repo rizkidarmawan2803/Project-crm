@@ -38,12 +38,42 @@ function FunnelRow({ label, value, suffix, percent, colorBar, colorText }) {
     );
 }
 
+// Activity Icons
+const activityIcons = {
+    phone: (
+        <svg className="w-4 h-4 text-blue-600" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
+            <path d="M3 2h3l1.5 3.5-1.8 1.1a9 9 0 004.7 4.7l1.1-1.8L15 11v3a1 1 0 01-1 1A13 13 0 012 3a1 1 0 011-1z"/>
+        </svg>
+    ),
+    meeting: (
+        <svg className="w-4 h-4 text-green-600" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
+            <circle cx="6" cy="5" r="2.5"/>
+            <path d="M1 13.5c0-2.5 2-4.5 5-4.5"/>
+            <circle cx="12" cy="5" r="2"/>
+            <path d="M11 9c1.5 0.3 3 1.5 3 4.5"/>
+        </svg>
+    ),
+    email: (
+        <svg className="w-4 h-4 text-amber-600" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
+            <path d="M2 4h12v9H2z"/>
+            <path d="M2 4l6 5 6-5"/>
+        </svg>
+    ),
+    document: (
+        <svg className="w-4 h-4 text-amber-600" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
+            <path d="M3 2h10v12H3z"/>
+            <line x1="6" y1="6" x2="10" y2="6"/>
+            <line x1="6" y1="9" x2="10" y2="9"/>
+        </svg>
+    ),
+};
+
 // Activity Item Component
-function ActivityItem({ iconBg, icon, title, description, time }) {
+function ActivityItem({ iconBg, iconType, title, description, time }) {
     return (
         <div className="flex items-start gap-3 py-3 border-b border-gray-50 last:border-0">
             <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${iconBg}`}>
-                {icon}
+                {activityIcons[iconType]}
             </div>
             <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-800">{title}</p>
