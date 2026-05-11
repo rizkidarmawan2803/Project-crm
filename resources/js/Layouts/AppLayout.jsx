@@ -60,17 +60,7 @@ const bottomItems = [
             </svg>
         ),
     },
-    {
-        label: 'Bantuan',
-        href: '/bantuan',
-        icon: (
-            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
-                <circle cx="8" cy="8" r="6"/>
-                <path d="M6 6c0-1.1.9-2 2-2s2 .9 2 2c0 1-1 1.5-2 2v1" strokeLinecap="round"/>
-                <circle cx="8" cy="11.5" r="0.5" fill="currentColor"/>
-            </svg>
-        ),
-    },
+    
     {
         label: 'Keluar',
         href: '/logout',
