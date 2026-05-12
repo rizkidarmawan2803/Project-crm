@@ -1,49 +1,80 @@
-import React from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import React from "react";
+import { Link, usePage } from "@inertiajs/react";
 
 const navItems = [
     {
-        label: 'Dashboard',
-        href: '/dashboard',
+        label: "Dashboard",
+        href: "/dashboard",
         icon: (
-            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
-                <rect x="1" y="1" width="6" height="6" rx="1"/>
-                <rect x="9" y="1" width="6" height="6" rx="1"/>
-                <rect x="1" y="9" width="6" height="6" rx="1"/>
-                <rect x="9" y="9" width="6" height="6" rx="1"/>
+            <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                viewBox="0 0 24 24"
+            >
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                />
             </svg>
         ),
     },
     {
-        label: 'Manajemen Pengguna',
-        href: '/pengguna',
+        label: "Manajemen Pengguna",
+        href: "/pengguna",
         icon: (
-            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
-                <circle cx="6" cy="5" r="2.5"/>
-                <path d="M1 13.5c0-2.5 2-4.5 5-4.5"/>
-                <circle cx="12" cy="5" r="2"/>
-                <path d="M11 9c1.5 0.3 3 1.5 3 4.5"/>
+            <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                viewBox="0 0 24 24"
+            >
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                />
             </svg>
         ),
     },
     {
-        label: 'Prospek',
-        href: '/prospek',
+        label: "Prospek",
+        href: "/prospek",
         icon: (
-            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <line x1="2" y1="4" x2="14" y2="4"/>
-                <line x1="2" y1="8" x2="14" y2="8"/>
-                <line x1="2" y1="12" x2="10" y2="12"/>
+            <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                viewBox="0 0 24 24"
+            >
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"
+                />
             </svg>
         ),
     },
     {
-        label: 'Pelanggan',
-        href: '/pelanggan',
+        label: "Pelanggan",
+        href: "/pelanggan",
         icon: (
-            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
-                <circle cx="8" cy="5.5" r="3"/>
-                <path d="M2 14c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/>
+            <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                viewBox="0 0 24 24"
+            >
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
             </svg>
         ),
     },
@@ -51,22 +82,45 @@ const navItems = [
 
 const bottomItems = [
     {
-        label: 'Pengaturan',
-        href: '/pengaturan',
+        label: "Pengaturan",
+        href: "/pengaturan",
         icon: (
-            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
-                <circle cx="8" cy="8" r="2.5"/>
-                <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/>
+            <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                viewBox="0 0 24 24"
+            >
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                />
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
             </svg>
         ),
     },
-    
     {
-        label: 'Keluar',
-        href: '/logout',
+        label: "Keluar",
+        href: "/logout",
         icon: (
-            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
-                <path d="M6 3H3a1 1 0 00-1 1v8a1 1 0 001 1h3M10 11l4-3-4-3M14 8H6"/>
+            <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                viewBox="0 0 24 24"
+            >
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
             </svg>
         ),
     },
@@ -76,11 +130,9 @@ export default function AppLayout({ children }) {
     const { url } = usePage();
 
     return (
-        <div className="flex min-h-screen bg-gray-50">
-
+        <div className="flex min-h-screen bg-gray-50 text-[15px]">
             {/* SIDEBAR */}
             <aside className="fixed top-0 left-0 w-56 h-screen bg-white border-r border-gray-100 flex flex-col z-20">
-
                 {/* Logo */}
                 <div className="px-5 py-4 border-b border-gray-100">
                     <img
@@ -92,29 +144,35 @@ export default function AppLayout({ children }) {
 
                 {/* Nav Menu */}
                 <nav className="flex-1 px-2 py-3 space-y-0.5">
-                    {navItems.map((item) => (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all
-                                ${url.startsWith(item.href)
-                                    ? 'bg-blue-50 text-blue-700 font-medium border-l-2 border-blue-600'
-                                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
-                                }`}
-                        >
-                            {item.icon}
-                            {item.label}
-                        </Link>
-                    ))}
+                    {navItems.map((item) => {
+                        const active =
+                            url === item.href ||
+                            url.startsWith(item.href + "/");
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] transition-all duration-150
+                                    ${
+                                        active
+                                            ? "bg-blue-50 text-blue-700 font-medium border-l-2 border-blue-600"
+                                            : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
+                                    }`}
+                            >
+                                {item.icon}
+                                {item.label}
+                            </Link>
+                        );
+                    })}
                 </nav>
 
-                {/* Nav Bottom */}
+                {/* Bottom Nav */}
                 <div className="px-2 py-3 border-t border-gray-100 space-y-0.5">
                     {bottomItems.map((item) => (
                         <Link
                             key={item.href}
                             href={item.href}
-                            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-800 transition-all"
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] text-gray-500 hover:bg-gray-50 hover:text-gray-800 transition-all duration-150"
                         >
                             {item.icon}
                             {item.label}
@@ -125,39 +183,110 @@ export default function AppLayout({ children }) {
 
             {/* MAIN */}
             <main className="ml-56 flex-1 flex flex-col">
-
-                {/* Topbar */}
+                {/* TOPBAR */}
                 <header className="sticky top-0 z-10 bg-white border-b border-gray-100 px-6 py-3">
                     <div className="flex items-center gap-3">
-                        <div className="flex-1 flex items-center gap-2.5 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-400">
-                            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                <circle cx="7" cy="7" r="5"/>
-                                <path d="M11 11l3 3"/>
+                        {/* Search */}
+                        <div className="flex-1 relative max-w-md">
+                            <svg
+                                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                />
                             </svg>
-                            Cari prospek, pasar, atau aktivitas...
+                            <input
+                                type="text"
+                                placeholder="Cari prospek, pasar, atau aktivitas..."
+                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-[14px] text-gray-700 outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
+                            />
                         </div>
-                        <div className="flex items-center gap-2">
-                            <button className="w-9 h-9 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition-colors">
-                                <svg className="w-4 h-4 text-gray-500" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
-                                    <path d="M8 2a5 5 0 00-5 5v2L1.5 12h13L13 9V7a5 5 0 00-5-5zM6.5 13.5a1.5 1.5 0 003 0"/>
+
+                        {/* Actions - di samping search */}
+                        <div className="flex items-center gap-2 ml-auto">
+                            {/* Notifikasi */}
+                            <button
+                                className="w-9 h-9 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                                title="Notifikasi"
+                            >
+                                <svg
+                                    className="w-4 h-4 text-gray-500"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={1.8}
+                                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5"
+                                    />
                                 </svg>
                             </button>
-                            <button className="w-9 h-9 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition-colors">
-                                <svg className="w-4 h-4 text-gray-500" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3">
-                                    <circle cx="8" cy="8" r="6"/>
-                                    <path d="M8 6v1M8 10v0.5" strokeLinecap="round"/>
+
+                            {/* Bantuan */}
+                            <button
+                                className="w-9 h-9 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                                title="Bantuan"
+                            >
+                                <svg
+                                    className="w-4 h-4 text-gray-500"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={1.8}
+                                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01"
+                                    />
                                 </svg>
                             </button>
-                            <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-xs font-semibold text-blue-700 cursor-pointer">
-                                AD
+
+                            {/* Divider */}
+                            <div className="w-px h-6 bg-gray-200 mx-1" />
+
+                            {/* Avatar + nama user */}
+                            <div className="flex items-center gap-2 cursor-pointer group">
+                                <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-[13px] font-semibold text-blue-700">
+                                    AD
+                                </div>
+                                <div className="hidden sm:block">
+                                    <p className="text-[13px] font-medium text-gray-800 leading-tight">
+                                        Admin
+                                    </p>
+                                    <p className="text-[11px] text-gray-400 leading-tight">
+                                        Administrator
+                                    </p>
+                                </div>
+                                <svg
+                                    className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-600"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M19 9l-7 7-7-7"
+                                    />
+                                </svg>
                             </div>
                         </div>
                     </div>
                 </header>
 
-                {/* Content */}
-                <div className="flex-1 p-6">
-                    {children}
+                {/* CONTENT - max-width agar tidak terlalu lebar, centered */}
+                <div className="flex-1 py-7 px-8">
+                    <div className="max-w-6xl mx-auto">{children}</div>
                 </div>
             </main>
         </div>
