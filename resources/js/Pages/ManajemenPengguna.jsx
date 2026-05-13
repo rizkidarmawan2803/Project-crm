@@ -87,21 +87,9 @@ function TambahKlienModal({ isOpen = true, onClose = () => {} }) {
                 </select>
               </div>
 
-              <div>
+                              <div>
                 <label className="mb-1 block text-[13px] font-medium text-slate-600">
-                  Fokus Pipeline
-                </label>
-
-                <select className="h-10 w-full rounded-md border border-slate-200 px-3 text-[13px] outline-none transition focus:border-blue-500">
-                  <option>Pilih Fokus Pipeline</option>
-                  <option>Lead Conversion</option>
-                  <option>Sales Growth</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-1 block text-[13px] font-medium text-slate-600">
-                  Kata Sandi Sementara
+                  Kata Sandi 
                 </label>
 
                 <input
@@ -131,7 +119,7 @@ function TambahKlienModal({ isOpen = true, onClose = () => {} }) {
     </div>
   );
 }
-
+    
 export default function ManajemenPengguna() {
   const [openModal, setOpenModal] = useState(false);
 
