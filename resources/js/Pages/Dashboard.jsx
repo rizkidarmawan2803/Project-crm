@@ -1,4 +1,6 @@
 import React from 'react';
+import { useEffect, useState } from "react";
+import axios from "axios";
 import AppLayout from '../Layouts/AppLayout';
 
 // Stat Card Component
@@ -99,47 +101,65 @@ function AlertCard({ label, labelColor, title, subtitle, btnText, btnClass, card
 }
 
 export default function Dashboard({ stats, funnel, activities, alerts, weekly_trend, peak_performance }) {
+
+    const [dashboardData, setDashboardData] = useState(null);
+
+    useEffect(() => {
+
+        axios.get("/api/dashboard")
+            .then((response) => {
+                setDashboardData(response.data);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+
+    }, []);
+
     return (
         <AppLayout>
 
             {/* STAT CARDS */}
             <div className="grid grid-cols-4 gap-4 mb-6">
                 <StatCard
-                    iconBg="bg-blue-50"
-                    icon={<svg className="w-4 h-4 text-blue-600" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3"><circle cx="8" cy="8" r="6"/><path d="M4 8a4 4 0 014-4"/></svg>}
-                    badge="+4.2%"
-                    badgeClass="bg-green-50 text-green-700"
-                    label="Total Target Market"
-                    value={stats.total_target_market.toLocaleString()}
-                    sub="dibandingkan bulan lalu"
-                />
-                <StatCard
-                    iconBg="bg-teal-50"
-                    icon={<svg className="w-4 h-4 text-teal-600" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3"><path d="M8 2C5 2 3 4 3 7c0 1.5.5 2.8 1.3 3.7L3 14l3.5-1c.5.2 1 .3 1.5.3 3 0 5-2 5-5S11 2 8 2z"/></svg>}
-                    badge={`+${stats.prospek_today} today`}
-                    badgeClass="bg-blue-50 text-blue-700"
-                    label="Prospek Aktif"
-                    value={stats.prospek_aktif}
-                    sub="status aktif"
-                />
-                <StatCard
-                    iconBg="bg-green-50"
-                    icon={<svg className="w-4 h-4 text-green-600" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3"><circle cx="8" cy="6" r="3"/><path d="M3 14c0-2.8 2.2-5 5-5s5 2.2 5 5"/></svg>}
-                    badge="Sesuai rencana"
-                    badgeClass="bg-green-50 text-green-700"
-                    label="Pelanggan Berhasil"
-                    value={stats.pelanggan_berhasil}
-                    sub="melampaui target"
-                />
-                <StatCard
-                    iconBg="bg-red-50"
-                    icon={<svg className="w-4 h-4 text-red-500" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="2,12 6,7 9,10 14,4"/></svg>}
-                    badge="-0.4%"
-                    badgeClass="bg-red-50 text-red-600"
-                    label="Tingkat Konversi"
-                    value={`${stats.tingkat_konversi}%`}
-                    sub="rata rata bulanan"
-                />
+                iconBg="bg-blue-50"
+                icon={<svg className="w-4 h-4 text-blue-600" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3"><circle cx="8" cy="8" r="6"/><path d="M4 8a4 4 0 014-4"/></svg>}
+                badge="+4.2%"
+                badgeClass="bg-green-50 text-green-700"
+                label="Total Target Market"
+                value={dashboardData?.stats?.total_target_market?.toLocaleString() || 0}
+                sub="dibandingkan bulan lalu"
+            />
+
+            <StatCard
+                iconBg="bg-teal-50"
+                icon={<svg className="w-4 h-4 text-teal-600" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3"><path d="M8 2C5 2 3 4 3 7c0 1.5.5 2.8 1.3 3.7L3 14l3.5-1c.5.2 1 .3 1.5.3 3 0 5-2 5-5S11 2 8 2z"/></svg>}
+                badge={`+${dashboardData?.stats?.prospek_today || 0} today`}
+                badgeClass="bg-blue-50 text-blue-700"
+                label="Prospek Aktif"
+                value={dashboardData?.stats?.prospek_aktif || 0}
+                sub="status aktif"
+            />
+
+            <StatCard
+                iconBg="bg-green-50"
+                icon={<svg className="w-4 h-4 text-green-600" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3"><circle cx="8" cy="6" r="3"/><path d="M3 14c0-2.8 2.2-5 5-5s5 2.2 5 5"/></svg>}
+                badge="Sesuai rencana"
+                badgeClass="bg-green-50 text-green-700"
+                label="Pelanggan Berhasil"
+                value={dashboardData?.stats?.pelanggan_berhasil || 0}
+                sub="melampaui target"
+            />
+
+            <StatCard
+                iconBg="bg-red-50"
+                icon={<svg className="w-4 h-4 text-red-500" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="2,12 6,7 9,10 14,4"/></svg>}
+                badge="-0.4%"
+                badgeClass="bg-red-50 text-red-600"
+                label="Tingkat Konversi"
+                value={`${dashboardData?.stats?.conversion_rate || 0}%`}
+                sub="rata rata bulanan"
+            />
             </div>
 
             {/* CORONG KONVERSI */}
@@ -148,7 +168,7 @@ export default function Dashboard({ stats, funnel, activities, alerts, weekly_tr
                     <h2 className="text-sm font-semibold text-gray-800">Corong Konversi</h2>
                     <a href="#" className="text-xs text-blue-600 hover:underline">Lihat Laporan Lengkap →</a>
                 </div>
-                {funnel.map((item, i) => (
+                {(funnel || []).map((item, i) => (
                     <FunnelRow key={i} {...item} />
                 ))}
             </div>
@@ -157,7 +177,7 @@ export default function Dashboard({ stats, funnel, activities, alerts, weekly_tr
             <div className="bg-white rounded-xl border border-gray-100 p-5 mb-5">
                 <h2 className="text-sm font-semibold text-gray-800 mb-2">Aktivitas Terkini</h2>
                 <div className="divide-y divide-gray-50">
-                    {activities.map((activity, i) => (
+                    {(activities || []).map((activity, i) => (
                         <ActivityItem key={i} {...activity} />
                     ))}
                 </div>
@@ -175,7 +195,7 @@ export default function Dashboard({ stats, funnel, activities, alerts, weekly_tr
                         </svg>
                         Peringatan Mendesak
                     </h2>
-                    {alerts.map((alert, i) => (
+                    {(alerts || []).map((alert, i) => (
                         <AlertCard key={i} {...alert} />
                     ))}
                 </div>
@@ -186,7 +206,7 @@ export default function Dashboard({ stats, funnel, activities, alerts, weekly_tr
 
                     {/* Bar Chart */}
                     <div className="flex items-end gap-2 h-28">
-                        {weekly_trend.map((day, i) => (
+                        {(weekly_trend || []).map((day, i) => (
                             <div key={i} className="flex-1 flex flex-col items-center gap-1">
                                 <div
                                     className={`w-full rounded-t transition-all duration-500 ${day.active ? 'bg-blue-500' : 'bg-gray-100'}`}
