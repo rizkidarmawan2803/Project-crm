@@ -23,8 +23,8 @@ class LeadClientController extends Controller
         if ($request->search) {
             $query->where(function ($q) use ($request) {
                 $q->where('nama_client', 'like', '%' . $request->search . '%')
-                  ->orWhere('company_name', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%');
+                    ->orWhere('company_name', 'like', '%' . $request->search . '%')
+                    ->orWhere('email', 'like', '%' . $request->search . '%');
             });
         }
 
@@ -122,6 +122,24 @@ class LeadClientController extends Controller
         return response()->json([
             'status'  => 'success',
             'message' => 'Prospek berhasil dihapus',
+        ]);
+    }
+
+    // PUT /api/prospek/{id}/convert
+    public function convertToClient($id)
+    {
+        $prospek = LeadClient::findOrFail($id);
+
+        // Ubah tipe data menjadi client
+        $prospek->update([
+            'user_type'   => 'client',
+            'lead_status' => 'Deal',
+        ]);
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Prospek berhasil dikonversi menjadi client.',
+            'data'    => $prospek->load('sales'),
         ]);
     }
 }

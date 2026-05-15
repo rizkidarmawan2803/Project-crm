@@ -29,6 +29,9 @@ Route::get('/prospek/{id}', [LeadClientController::class, 'show']);
 Route::put('/prospek/{id}', [LeadClientController::class, 'update']);
 Route::delete('/prospek/{id}', [LeadClientController::class, 'destroy']);
 
+// Konversi prospek menjadi client
+Route::put('/prospek/{id}/convert', [LeadClientController::class, 'convertToClient']);
+
 // ==============================
 // RIWAYAT KOMUNIKASI / AKTIVITAS
 // ==============================
@@ -38,3 +41,4 @@ Route::get('/aktivitas/{leadClientId}', [AktivitasController::class, 'index']);
 
 // Menambahkan aktivitas baru
 Route::post('/aktivitas', [AktivitasController::class, 'store']);
+

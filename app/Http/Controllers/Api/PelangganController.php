@@ -1,26 +1,49 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\LeadClient;
-use Inertia\Inertia;
+use Illuminate\Http\Request;
 use Carbon\Carbon;
 
 class PelangganController extends Controller
 {
-    public function index()
+    /**
+     * GET /api/pelanggan
+     * Menampilkan seluruh data pelanggan
+     * (data dari tabel lead_clients dengan lead_status = 'Deal')
+     */
+    public function index(Request $request)
     {
         /*
         |--------------------------------------------------------------------------
-        | Ambil semua data pelanggan
+        | Query Data Pelanggan
         |--------------------------------------------------------------------------
-        | Data pelanggan diambil dari tabel lead_clients
-        | dengan kondisi lead_status = 'Deal'
-        | karena prospek yang berhasil dikonversi menjadi pelanggan
-        | akan memiliki status tersebut.
         */
-        $clients = LeadClient::with('sales')
-            ->where('lead_status', 'Deal')
+        $query = LeadClient::with('sales')
+            ->where('lead_status', 'Deal');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pencarian (opsional)
+        |--------------------------------------------------------------------------
+        */
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('nama_client', 'like', '%' . $request->search . '%')
+                    ->orWhere('company_name', 'like', '%' . $request->search . '%')
+                    ->orWhere('phone', 'like', '%' . $request->search . '%')
+                    ->orWhere('email', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ambil Data
+        |--------------------------------------------------------------------------
+        */
+        $clients = $query
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -31,10 +54,10 @@ class PelangganController extends Controller
         */
         $totalPelanggan = $clients->count();
 
-        // Sementara seluruh pelanggan dianggap aktif
+        // Untuk sementara seluruh pelanggan dianggap aktif
         $pelangganAktif = $totalPelanggan;
 
-        // Jumlah prospek yang berhasil dikonversi
+        // Jumlah prospek yang berhasil dikonversi menjadi pelanggan
         $prospekBerhasil = LeadClient::where('lead_status', 'Deal')->count();
 
         $stats = [
@@ -66,10 +89,10 @@ class PelangganController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Format Data untuk React (Pelanggan.jsx)
+        | Mapping Data untuk React (Pelanggan.jsx)
         |--------------------------------------------------------------------------
-        | Kolom "Account Manager Assigned" akan menampilkan
-        | nama pelanggan (nama_client), bukan nama PIC/Sales.
+        | Kolom "Account Manager Assigned" akan menampilkan nama pelanggan
+        | (nama_client), bukan nama PIC/Sales.
         |--------------------------------------------------------------------------
         */
         $colors = [
@@ -83,21 +106,8 @@ class PelangganController extends Controller
         ];
 
         $pelanggan = $clients->map(function ($client) use ($colors) {
-            /*
-            |--------------------------------------------------------------------------
-            | Nama yang akan ditampilkan pada kolom
-            | "Account Manager Assigned"
-            |--------------------------------------------------------------------------
-            | Menggunakan nama pelanggan.
-            */
-            $displayName = $client->nama_client ?: 'Tidak Ada';
-
-            /*
-            |--------------------------------------------------------------------------
-            | Ambil inisial dari nama pelanggan
-            |--------------------------------------------------------------------------
-            */
-            $inisial = collect(explode(' ', $displayName))
+            // Inisial dari nama pelanggan
+            $inisial = collect(explode(' ', $client->nama_client))
                 ->filter()
                 ->map(fn ($word) => strtoupper(substr($word, 0, 1)))
                 ->take(2)
@@ -107,30 +117,21 @@ class PelangganController extends Controller
                 $inisial = 'NA';
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Warna avatar berdasarkan sales_id
-            |--------------------------------------------------------------------------
-            */
+            // Warna avatar berdasarkan sales_id
             $avatarColor = $colors[$client->sales_id % count($colors)];
 
             return [
                 'id' => $client->id,
 
-                // Nama perusahaan, jika kosong gunakan nama pelanggan
+                // Nama perusahaan (jika kosong gunakan nama pelanggan)
                 'perusahaan' => $client->company_name ?: $client->nama_client,
 
-                // Kontak (telepon)
+                // Nomor kontak
                 'kontak' => $client->phone,
 
-                /*
-                |--------------------------------------------------------------------------
-                | Account Manager Assigned
-                |--------------------------------------------------------------------------
-                | Walaupun nama field tetap "manager" agar kompatibel
-                | dengan Pelanggan.jsx, nilainya berisi nama pelanggan.
-                */
-                'manager' => $displayName,
+                // Kolom "Account Manager Assigned"
+                // Menampilkan nama pelanggan
+                'manager' => $client->nama_client,
 
                 // Inisial nama pelanggan
                 'inisial' => $inisial,
@@ -145,7 +146,9 @@ class PelangganController extends Controller
                 // Status akun
                 'status' => 'Aktif',
 
-                // Data tambahan
+                /*
+                | Data tambahan
+                */
                 'nama_client' => $client->nama_client,
                 'email' => $client->email,
                 'company_name' => $client->company_name,
@@ -155,13 +158,34 @@ class PelangganController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Kirim ke Inertia React
+        | Response JSON
         |--------------------------------------------------------------------------
         */
-        return Inertia::render('Pelanggan', [
-            'stats'          => $stats,
-            'pelanggan'      => $pelanggan,
+        return response()->json([
+            'status' => 'success',
+            'stats' => $stats,
+            'pelanggan' => $pelanggan,
             'totalPelanggan' => $totalPelanggan,
+        ]);
+    }
+
+    /**
+     * GET /api/pelanggan/{id}
+     * Menampilkan detail pelanggan
+     */
+    public function show($id)
+    {
+        $client = LeadClient::with([
+            'sales',
+            'communicationLogs.user',
+            'reminders',
+        ])
+            ->where('lead_status', 'Deal')
+            ->findOrFail($id);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $client,
         ]);
     }
 }
