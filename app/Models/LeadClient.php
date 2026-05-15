@@ -13,14 +13,15 @@ class LeadClient extends Model
 
     protected $fillable = [
         'sales_id',
-        'first_name',
-        'last_name',
+        'nama_client',
         'company_name',
         'phone',
         'email',
         'product_interest',
-        'user_type',
+        'sumber',
         'lead_status',
+        'domisili',
+        'alamat_lengkap',
         'created_at',
     ];
 
@@ -47,21 +48,19 @@ class LeadClient extends Model
         return $this->hasMany(Reminder::class, 'lead_client_id');
     }
 
-    // Accessor: full name
-    public function getFullNameAttribute(): string
+    // Scope by status
+    public function scopeBaru($query)
     {
-        return trim("{$this->first_name} {$this->last_name}");
+        return $query->where('lead_status', 'Baru');
     }
 
-    // Scope: hanya lead
-    public function scopeLead($query)
+    public function scopeDeal($query)
     {
-        return $query->where('user_type', 'lead');
+        return $query->where('lead_status', 'Deal');
     }
 
-    // Scope: hanya client
-    public function scopeClient($query)
+    public function scopeAktif($query)
     {
-        return $query->where('user_type', 'client');
+        return $query->whereNotIn('lead_status', ['Deal', 'Ditolak']);
     }
 }

@@ -373,7 +373,7 @@ export default function ManajemenPengguna() {
                                         </td>
 
                                         <td className="px-3 py-2.5 text-[13px] text-slate-700">
-                                            {item.total_clients} Pelanggan
+                                            {item.total_pelanggan} Pelanggan
                                         </td>
 
                                         <td className="px-3 py-2.5 text-[13px] text-slate-700">
