@@ -11,22 +11,21 @@ return new class extends Migration
         Schema::create('lead_clients', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sales_id')->constrained('users')->onDelete('cascade');
-            $table->string('first_name', 50);
-            $table->string('last_name', 50)->nullable();
+            $table->string('nama_client', 50);
             $table->string('company_name', 100)->nullable();
             $table->string('phone', 20);
             $table->string('email', 255)->unique()->nullable();
             $table->string('product_interest', 100)->nullable();
-            $table->enum('user_type', ['lead', 'client'])->default('lead');
+            $table->string('sumber', 50);
             $table->enum('lead_status', [
-                'new',
-                'contacted',
-                'follow_up',
-                'proposal',
-                'negotiation',
-                'closed_won',
-                'closed_lost'
-            ])->default('new');
+                'Baru',
+                'Dihubungi',
+                'Negosiasi',
+                'Deal',
+                'Ditolak'
+            ])->default('Baru');
+            $table->string('domisili', 50);
+            $table->longText('alamat_lengkap');
             $table->datetime('created_at');
             $table->datetime('updated_at')->nullable();
         });

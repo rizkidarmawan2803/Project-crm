@@ -26,24 +26,17 @@ export default function ModalTambahKlien({ show, onClose }) {
                 Informasi Dasar
             </p>
             <FormGrid>
-                <FormField label="Nama Perusahaan">
+                <FormField label="Nama Client">
                     <input
                         className={inputCls}
-                        placeholder="Masukkan nama perusahaan"
+                        placeholder="Masukkan nama Client"
                     />
                 </FormField>
-                <FormField label="Domisili">
-                    <input className={inputCls} placeholder="Domisili" />
+                <FormField label="Nama Perusahaan">
+                    <input className={inputCls} placeholder="Masukkan Nama Perusahaan" />
                 </FormField>
-                <FormField label="Industri">
-                    <select className={selectCls}>
-                        <option value="">Pilih industri</option>
-                        <option>Teknologi</option>
-                        <option>Manufaktur</option>
-                        <option>Ritel</option>
-                        <option>Jasa</option>
-                        <option>Kesehatan</option>
-                    </select>
+                <FormField label="Nomor Telepon Kantor">
+                    <input className={inputCls} placeholder="+62 21 XXXXXXX" />
                 </FormField>
                 <FormField label="Email Kontak">
                     <input
@@ -52,23 +45,23 @@ export default function ModalTambahKlien({ show, onClose }) {
                         placeholder="email@perusahaan.com"
                     />
                 </FormField>
-                <FormField label="Nomor Telepon Kantor">
-                    <input className={inputCls} placeholder="+62 21 XXXXXXX" />
+                <FormField label="Produk yang diminati">
+                    <input className={inputCls} placeholder="Masukkan produk yang diminati" />
                 </FormField>
-                <FormField label="Account Manager Assigned">
-                    <select className={selectCls}>
-                        <option>Sarah Jenkins</option>
-                        <option>Andi Mahendra</option>
-                        <option>Siti Aminah</option>
-                        <option>Reza Darmawan</option>
-                    </select>
+                <FormField label="Sumber">
+                    <input className={inputCls} placeholder="Masukkan sumber informasi client" />
                 </FormField>
                 <FormField label="Status Awal">
                     <select className={selectCls}>
                         <option>Baru</option>
                         <option>Dihubungi</option>
                         <option>Negosiasi</option>
+                        <option>Deal</option>
+                        <option>Ditolak</option>
                     </select>
+                </FormField>
+                <FormField label="Domisili">
+                    <input className={inputCls} placeholder="Masukkan Domisili" />
                 </FormField>
                 <FormField label="Alamat Lengkap Perusahaan" full>
                     <textarea
