@@ -70,17 +70,17 @@ export default function Index({ sales = [] }) {
         }
     };
 
-    const handleSimpanKlien = async (data) => {
-        try {
-            await axios.post('/api/prospek', data);
-            setShowTambahKlien(false);
-            showToast("Prospek berhasil ditambahkan!");
-            fetchProspeks();
-        } catch (error) {
-            showToast("Gagal menambahkan prospek!", "error");
-            console.error(error);
-        }
-    };
+    // const handleSimpanKlien = async (data) => {
+    //     try {
+    //         await axios.post('/api/prospek', data);
+    //         setShowTambahKlien(false);
+    //         showToast("Prospek berhasil ditambahkan!");
+    //         fetchProspeks();
+    //     } catch (error) {
+    //         showToast("Gagal menambahkan prospek!", "error");
+    //         console.error(error);
+    //     }
+    // };
 
     return (
         <>
@@ -144,10 +144,8 @@ const handleSimpanKlien = async (data) => {
         console.log('Data yang dikirim:', data); // ← tambahkan ini
         await axios.post('/api/prospek', data);
         setShowTambahKlien(false);
-        showToast("Prospek berhasil ditambahkan!");
         fetchProspeks();
     } catch (error) {
         console.error('Response error:', error.response?.data); // ← tambahkan ini
-        showToast("Gagal menambahkan prospek!", "error");
     }
 };

@@ -11,46 +11,50 @@ class LeadClientController extends Controller
 {
     // GET /api/prospek
     public function index(Request $request)
-    {
-        $query = LeadClient::with('sales');
+{
+    $userId = auth()->user()->id;
 
-        // Filter by status
-        if ($request->status && $request->status !== 'Semua') {
-            $query->where('lead_status', $request->status);
-        }
+    $query = LeadClient::with('sales')
+        ->where('sales_id', $userId);
 
-        // Search
-        if ($request->search) {
-            $query->where(function ($q) use ($request) {
-                $q->where('nama_client', 'like', '%' . $request->search . '%')
-                    ->orWhere('company_name', 'like', '%' . $request->search . '%')
-                    ->orWhere('email', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        $prospeks = $query->orderBy('created_at', 'desc')->paginate(5);
-
-        return response()->json([
-            'status'   => 'success',
-            'prospeks' => $prospeks,
-            'summary'  => [
-                'total'     => LeadClient::count(),
-                'baru'      => LeadClient::where('lead_status', 'Baru')->count(),
-                'dihubungi' => LeadClient::where('lead_status', 'Dihubungi')->count(),
-                'negosiasi' => LeadClient::where('lead_status', 'Negosiasi')->count(),
-                'deal'      => LeadClient::where('lead_status', 'Deal')->count(),
-                'ditolak'   => LeadClient::where('lead_status', 'Ditolak')->count(),
-            ]
-        ]);
+    // Filter by status
+    if ($request->status && $request->status !== 'Semua') {
+        $query->where('lead_status', $request->status);
     }
+
+    // Search
+    if ($request->search) {
+        $query->where(function ($q) use ($request) {
+            $q->where('nama_client', 'like', '%' . $request->search . '%')
+                ->orWhere('company_name', 'like', '%' . $request->search . '%')
+                ->orWhere('email', 'like', '%' . $request->search . '%');
+        });
+    }
+
+    $prospeks = $query->orderBy('created_at', 'desc')->paginate(5);
+
+    return response()->json([
+        'status'   => 'success',
+        'prospeks' => $prospeks,
+        'summary'  => [
+            'total'     => LeadClient::where('sales_id', $userId)->count(),
+            'baru'      => LeadClient::where('sales_id', $userId)->where('lead_status', 'Baru')->count(),
+            'dihubungi' => LeadClient::where('sales_id', $userId)->where('lead_status', 'Dihubungi')->count(),
+            'negosiasi' => LeadClient::where('sales_id', $userId)->where('lead_status', 'Negosiasi')->count(),
+            'deal'      => LeadClient::where('sales_id', $userId)->where('lead_status', 'Deal')->count(),
+            'ditolak'   => LeadClient::where('sales_id', $userId)->where('lead_status', 'Ditolak')->count(),
+        ]
+    ]);
+}
 
     // POST /api/prospek
     public function store(Request $request)
     {
+        
         $request->validate([
             'nama_client'    => 'required|string|max:50',
             'phone'          => 'required|string|max:20',
-            'sales_id'       => 'required|exists:users,id',
+            // 'sales_id'       => 'required|exists:users,id',
             'lead_status'    => 'required|in:Baru,Dihubungi,Negosiasi,Deal,Ditolak',
             'sumber'         => 'required|string|max:50',
             'domisili'       => 'required|string|max:50',
@@ -58,7 +62,7 @@ class LeadClientController extends Controller
         ]);
 
         $prospek = LeadClient::create([
-            'sales_id'         => $request->sales_id,
+            'sales_id'         => auth()->id(),
             'nama_client'      => $request->nama_client,
             'company_name'     => $request->company_name,
             'phone'            => $request->phone,

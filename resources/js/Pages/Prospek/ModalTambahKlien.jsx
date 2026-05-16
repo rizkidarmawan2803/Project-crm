@@ -20,7 +20,7 @@ export default function ModalTambahKlien({ show, onClose, onSimpan, sales = [] }
         lead_status:      'Baru',
         domisili:         '',
         alamat_lengkap:   '',
-        sales_id:         '',
+        // sales_id:         '',
     });
 
     const [loading, setLoading] = useState(false);
@@ -43,7 +43,7 @@ export default function ModalTambahKlien({ show, onClose, onSimpan, sales = [] }
                 lead_status:      'Baru',
                 domisili:         '',
                 alamat_lengkap:   '',
-                sales_id:         '',
+                // sales_id:         '',
             });
         } finally {
             setLoading(false);
@@ -155,7 +155,7 @@ export default function ModalTambahKlien({ show, onClose, onSimpan, sales = [] }
                     />
                 </FormField>
 
-                <FormField label="Sales PIC">
+                {/* <FormField label="Sales PIC">
                     <select
                         name="sales_id"
                         className={selectCls}
@@ -169,7 +169,7 @@ export default function ModalTambahKlien({ show, onClose, onSimpan, sales = [] }
                             </option>
                         ))}
                     </select>
-                </FormField>
+                </FormField> */}
 
                 <FormField label="Alamat Lengkap Perusahaan" full>
                     <textarea
