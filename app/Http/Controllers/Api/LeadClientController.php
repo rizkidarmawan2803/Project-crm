@@ -11,50 +11,50 @@ class LeadClientController extends Controller
 {
     // GET /api/prospek
     public function index(Request $request)
-{
-    $userId = auth()->user()->id;
+    {
+        $userId = auth()->user()->id;
 
-    $query = LeadClient::with('sales')
-        ->where('sales_id', $userId);
+        $query = LeadClient::with('sales')
+            ->where('sales_id', $userId);
 
-    // Filter by status
-    if ($request->status && $request->status !== 'Semua') {
-        $query->where('lead_status', $request->status);
+        // Filter by status
+        if ($request->status && $request->status !== 'Semua') {
+            $query->where('lead_status', $request->status);
+        }
+
+        // Search
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('nama_client', 'like', '%' . $request->search . '%')
+                    ->orWhere('company_name', 'like', '%' . $request->search . '%')
+                    ->orWhere('email', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        $prospeks = $query->orderBy('created_at', 'desc')->paginate(5);
+
+        return response()->json([
+            'status'   => 'success',
+            'prospeks' => $prospeks,
+            'summary'  => [
+                'total'     => LeadClient::where('sales_id', $userId)->count(),
+                'baru'      => LeadClient::where('sales_id', $userId)->where('lead_status', 'Baru')->count(),
+                'dihubungi' => LeadClient::where('sales_id', $userId)->where('lead_status', 'Dihubungi')->count(),
+                'negosiasi' => LeadClient::where('sales_id', $userId)->where('lead_status', 'Negosiasi')->count(),
+                'deal'      => LeadClient::where('sales_id', $userId)->where('lead_status', 'Deal')->count(),
+                'ditolak'   => LeadClient::where('sales_id', $userId)->where('lead_status', 'Ditolak')->count(),
+            ]
+        ]);
     }
-
-    // Search
-    if ($request->search) {
-        $query->where(function ($q) use ($request) {
-            $q->where('nama_client', 'like', '%' . $request->search . '%')
-                ->orWhere('company_name', 'like', '%' . $request->search . '%')
-                ->orWhere('email', 'like', '%' . $request->search . '%');
-        });
-    }
-
-    $prospeks = $query->orderBy('created_at', 'desc')->paginate(5);
-
-    return response()->json([
-        'status'   => 'success',
-        'prospeks' => $prospeks,
-        'summary'  => [
-            'total'     => LeadClient::where('sales_id', $userId)->count(),
-            'baru'      => LeadClient::where('sales_id', $userId)->where('lead_status', 'Baru')->count(),
-            'dihubungi' => LeadClient::where('sales_id', $userId)->where('lead_status', 'Dihubungi')->count(),
-            'negosiasi' => LeadClient::where('sales_id', $userId)->where('lead_status', 'Negosiasi')->count(),
-            'deal'      => LeadClient::where('sales_id', $userId)->where('lead_status', 'Deal')->count(),
-            'ditolak'   => LeadClient::where('sales_id', $userId)->where('lead_status', 'Ditolak')->count(),
-        ]
-    ]);
-}
 
     // POST /api/prospek
     public function store(Request $request)
     {
-        
+
         $request->validate([
             'nama_client'    => 'required|string|max:50',
             'phone'          => 'required|string|max:20',
-            // 'sales_id'       => 'required|exists:users,id',
+            //'sales_id'       => 'required|exists:users,id',
             'lead_status'    => 'required|in:Baru,Dihubungi,Negosiasi,Deal,Ditolak',
             'sumber'         => 'required|string|max:50',
             'domisili'       => 'required|string|max:50',
@@ -130,13 +130,13 @@ class LeadClientController extends Controller
     }
 
     // PUT /api/prospek/{id}/convert
+    // PUT /api/prospek/{id}/convert
     public function convertToClient($id)
     {
         $prospek = LeadClient::findOrFail($id);
 
-        // Ubah tipe data menjadi client
+        // Update lead_status menjadi Deal (tidak ada user_type lagi)
         $prospek->update([
-            'user_type'   => 'client',
             'lead_status' => 'Deal',
         ]);
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { usePage } from "@inertiajs/react";
 import ProspekList from "./ProspekList";
 import ProspekDetail from "./ProspekDetail";
 import ModalTambahKlien from "./ModalTambahKlien";
@@ -8,12 +9,13 @@ import ModalTambahPengingat from "./ModalTambahPengingat";
 import Toast from "./Toast";
 
 export default function Index({ sales = [] }) {
+    const { auth } = usePage().props;
+
     const [selectedProspek, setSelectedProspek] = useState(null);
     const [showTambahKlien, setShowTambahKlien] = useState(false);
     const [showTambahDeal, setShowTambahDeal] = useState(false);
     const [showPengingat, setShowPengingat] = useState(false);
     const [toast, setToast] = useState(null);
-
     const [prospeks, setProspeks] = useState([]);
     const [summary, setSummary] = useState({
         total: 0, baru: 0, dihubungi: 0,
@@ -31,10 +33,7 @@ export default function Index({ sales = [] }) {
         setLoading(true);
         try {
             const response = await axios.get('/api/prospek', {
-                params: {
-                    status: activeFilter,
-                    page: page,
-                }
+                params: { status: activeFilter, page: page }
             });
             setProspeks(response.data.prospeks.data || []);
             setSummary(response.data.summary || {});
@@ -51,13 +50,8 @@ export default function Index({ sales = [] }) {
         setTimeout(() => setToast(null), 3000);
     };
 
-    const handleViewDetail = (prospek) => {
-        setSelectedProspek(prospek);
-    };
-
-    const handleBack = () => {
-        setSelectedProspek(null);
-    };
+    const handleViewDetail = (prospek) => setSelectedProspek(prospek);
+    const handleBack = () => setSelectedProspek(null);
 
     const handleDelete = async (id) => {
         if (!confirm('Yakin ingin menghapus prospek ini?')) return;
@@ -70,17 +64,23 @@ export default function Index({ sales = [] }) {
         }
     };
 
-    // const handleSimpanKlien = async (data) => {
-    //     try {
-    //         await axios.post('/api/prospek', data);
-    //         setShowTambahKlien(false);
-    //         showToast("Prospek berhasil ditambahkan!");
-    //         fetchProspeks();
-    //     } catch (error) {
-    //         showToast("Gagal menambahkan prospek!", "error");
-    //         console.error(error);
-    //     }
-    // };
+    const handleSimpanKlien = async (data) => {
+        try {
+            await axios.post('/api/prospek', data);
+            setShowTambahKlien(false);
+            showToast("Prospek berhasil ditambahkan!");
+            fetchProspeks();
+        } catch (error) {
+            console.error('Response error:', error.response?.data);
+            if (error.response?.status === 422) {
+                const errors = error.response.data.errors;
+                const pesan = Object.values(errors).flat().join('\n');
+                showToast('Validasi gagal: ' + pesan, 'error');
+            } else {
+                showToast("Gagal menambahkan prospek!", "error");
+            }
+        }
+    };
 
     return (
         <>
@@ -107,7 +107,6 @@ export default function Index({ sales = [] }) {
                 />
             )}
 
-            {/* Modal tambah klien */}
             <ModalTambahKlien
                 show={showTambahKlien}
                 onClose={() => setShowTambahKlien(false)}
@@ -115,19 +114,16 @@ export default function Index({ sales = [] }) {
                 sales={sales}
             />
 
-            {/* Modal tambah deal */}
             <ModalTambahDeal
                 show={showTambahDeal}
                 onClose={() => setShowTambahDeal(false)}
             />
 
-            {/* Modal tambah pengingat */}
             <ModalTambahPengingat
                 show={showPengingat}
                 onClose={() => setShowPengingat(false)}
             />
 
-            {/* Toast notifikasi */}
             {toast && (
                 <Toast
                     message={toast.message}
@@ -138,14 +134,3 @@ export default function Index({ sales = [] }) {
         </>
     );
 }
-
-const handleSimpanKlien = async (data) => {
-    try {
-        console.log('Data yang dikirim:', data); // ← tambahkan ini
-        await axios.post('/api/prospek', data);
-        setShowTambahKlien(false);
-        fetchProspeks();
-    } catch (error) {
-        console.error('Response error:', error.response?.data); // ← tambahkan ini
-    }
-};

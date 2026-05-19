@@ -9,11 +9,7 @@ use Carbon\Carbon;
 
 class PelangganController extends Controller
 {
-    /**
-     * GET /api/pelanggan
-     * Menampilkan seluruh data pelanggan
-     * (data dari tabel lead_clients dengan lead_status = 'Deal')
-     */
+    
     public function index(Request $request)
     {
         /*
