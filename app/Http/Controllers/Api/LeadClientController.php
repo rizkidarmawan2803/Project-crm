@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\LeadClient;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LeadClientController extends Controller
 {
@@ -55,6 +56,7 @@ class LeadClientController extends Controller
             'nama_client'    => 'required|string|max:50',
             'phone'          => 'required|string|max:20',
             //'sales_id'       => 'required|exists:users,id',
+            'email'          => 'required|email',
             'lead_status'    => 'required|in:Baru,Dihubungi,Negosiasi,Deal,Ditolak',
             'sumber'         => 'required|string|max:50',
             'domisili'       => 'required|string|max:50',
@@ -106,7 +108,19 @@ class LeadClientController extends Controller
             'nama_client' => 'required|string|max:50',
             'phone'       => 'required|string|max:20',
             'lead_status' => 'required|in:Baru,Dihubungi,Negosiasi,Deal,Ditolak',
+            'email'       => 'required|email',
         ]);
+
+        // Catat perubahan status
+        if ($request->lead_status !== $prospek->lead_status) {
+            \App\Models\StatusLog::create([
+                'lead_client_id' => $prospek->id,
+                'user_id'        => auth()->id(),
+                'status_lama'    => $prospek->lead_status,
+                'status_baru'    => $request->lead_status,
+                'catatan'        => $request->catatan ?? null,
+            ]);
+        }
 
         $prospek->update($request->all());
 
@@ -115,6 +129,59 @@ class LeadClientController extends Controller
             'message' => 'Prospek berhasil diupdate',
             'data'    => $prospek->load('sales'),
         ]);
+    }
+
+    public function exportCsv()
+    {
+        $userId = auth()->id();
+
+        $prospeks = LeadClient::where('sales_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $filename = 'prospek_' . date('Ymd_His') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        $callback = function () use ($prospeks) {
+            $file = fopen('php://output', 'w');
+
+            // Header CSV
+            fputcsv($file, [
+                'Nama Client',
+                'Perusahaan',
+                'Email',
+                'Phone',
+                'Status',
+                'Sumber',
+                'Domisili',
+                'Tanggal Dibuat',
+            ]);
+
+            // Data
+            foreach ($prospeks as $item) {
+                fputcsv($file, [
+                    $item->nama_client,
+                    $item->company_name,
+                    $item->email,
+                    $item->phone,
+                    $item->lead_status,
+                    $item->sumber,
+                    $item->domisili,
+                    $item->created_at
+                        ? \Carbon\Carbon::parse($item->created_at)
+                        ->translatedFormat('d F Y')
+                        : '-',
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     // DELETE /api/prospek/{id}

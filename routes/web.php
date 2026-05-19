@@ -6,10 +6,12 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ManajemenPenggunaController;
 use App\Http\Controllers\ProspekController;
 use App\Http\Controllers\PelangganController;
+use App\Http\Controllers\Api\StatusLogController;
 
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\LeadClientController;
 use App\Http\Controllers\Api\AktivitasController;
+
 
 
 // ─── AUTH (belum login) ───────────────────────────────
@@ -48,6 +50,10 @@ Route::delete('/users/{id}', [UserController::class, 'destroy']);
 Route::get('/dashboard', [App\Http\Controllers\Api\DashboardController::class, 'index']);
 
 
+Route::get('/prospek/{id}/status-logs', [StatusLogController::class, 'index']);
+Route::post('/prospek/{id}/status-logs', [StatusLogController::class, 'store']);
+
+
 // ==============================
 // PROSPEK / LEAD CLIENTS
 // ==============================
@@ -56,6 +62,7 @@ Route::post('/prospek', [LeadClientController::class, 'store']);
 Route::get('/prospek/{id}', [LeadClientController::class, 'show']);
 Route::put('/prospek/{id}', [LeadClientController::class, 'update']);
 Route::delete('/prospek/{id}', [LeadClientController::class, 'destroy']);
+
 
 // Konversi prospek menjadi pelanggan
 Route::put('/prospek/{id}/convert', [LeadClientController::class, 'convertToClient']);
@@ -71,7 +78,7 @@ Route::get('/pelanggan', [App\Http\Controllers\Api\PelangganController::class, '
 // Detail pelanggan
 Route::get('/pelanggan/{id}', [App\Http\Controllers\Api\PelangganController::class, 'show']);
 
-
+Route::get('/prospek/export/csv', [LeadClientController::class, 'exportCsv']);
 // ==============================
 // RIWAYAT KOMUNIKASI / AKTIVITAS
 // ==============================

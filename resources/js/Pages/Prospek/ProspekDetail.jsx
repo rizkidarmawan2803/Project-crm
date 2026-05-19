@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from "react";
-import ModalTambahPengingat from "./ModalTambahPengingat";
-import ModalTambahDeal from "./ModalTambahDeal";
 
 const TABS = [
     { key: "info", label: "Informasi Umum" },
     { key: "komun", label: "Riwayat Komunikasi" },
-    { key: "ingat", label: "Pengingat" },
-    { key: "deal", label: "Deal Terkait" },
 ];
 
 const DEAL_BADGE = {
@@ -21,8 +17,14 @@ function ChannelIcon({ channel }) {
         WA: { emoji: "💬", bg: "bg-green-500" },
         Email: { emoji: "✉️", bg: "bg-blue-500" },
         Call: { emoji: "📞", bg: "bg-purple-500" },
+        Status: { emoji: "🔄", bg: "bg-amber-500" },
     };
-    const { emoji, bg } = map[channel] ?? { emoji: "💬", bg: "bg-gray-400" };
+
+    const { emoji, bg } = map[channel] ?? {
+        emoji: "📌",
+        bg: "bg-gray-400",
+    };
+
     return (
         <div
             className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-white text-sm ${bg}`}
@@ -39,8 +41,6 @@ function formatTanggal(dateStr) {
         day: "numeric",
         month: "short",
         year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
     });
 }
 
@@ -60,14 +60,62 @@ function TabKomunikasi({ prospekId }) {
     async function fetchLogs() {
         setLoading(true);
         setError(null);
+
         try {
-            const res = await fetch(`/api/aktivitas/${prospekId}`, {
+            // Ambil aktivitas komunikasi
+            const aktivitasRes = await fetch(`/api/aktivitas/${prospekId}`, {
                 headers: { Accept: "application/json" },
                 credentials: "same-origin",
             });
-            if (!res.ok) throw new Error("Gagal memuat data.");
-            const json = await res.json();
-            setLogs(json.data ?? []);
+
+            // Ambil riwayat status
+            const statusRes = await fetch(
+                `/api/prospek/${prospekId}/status-logs`,
+                {
+                    headers: { Accept: "application/json" },
+                    credentials: "same-origin",
+                },
+            );
+
+            if (!aktivitasRes.ok || !statusRes.ok) {
+                throw new Error("Gagal memuat riwayat.");
+            }
+
+            const aktivitasJson = await aktivitasRes.json();
+            const statusJson = await statusRes.json();
+
+            // Format aktivitas komunikasi
+            const aktivitas = (aktivitasJson.data || []).map((item) => ({
+                id: `aktivitas-${item.id}`,
+                type: "aktivitas",
+                channel: item.channel,
+                message: item.message,
+                sales_name: item.sales_name,
+                created_at: item.contacted_at,
+            }));
+
+            // Format status log
+            const statusLogs = (statusJson.data || []).map((item) => ({
+                id: `status-${item.id}`,
+                type: "status",
+                channel: "Status",
+                message:
+                    `Status diubah dari "${item.status_lama}" ` +
+                    `menjadi "${item.status_baru}"` +
+                    (item.catatan ? `\nCatatan: ${item.catatan}` : ""),
+                sales_name:
+                    item.user?.name ||
+                    item.user?.first_name + " " + item.user?.last_name ||
+                    "-",
+                created_at: item.created_at,
+            }));
+
+            // Gabungkan lalu urutkan terbaru
+            const gabungan = [...aktivitas, ...statusLogs].sort(
+                (a, b) => new Date(b.created_at) - new Date(a.created_at),
+            );
+
+            setLogs(gabungan);
         } catch (e) {
             setError(e.message);
         } finally {
@@ -135,10 +183,11 @@ function TabKomunikasi({ prospekId }) {
         }
     }
 
+
     return (
         <div>
             <p className="text-[12px] uppercase tracking-widest text-gray-400 font-semibold mb-5">
-                Riwayat Komunikasi
+                Riwayat Aktivitas & Perubahan Status
             </p>
 
             {/* ── Timeline log ── */}
@@ -196,7 +245,7 @@ function TabKomunikasi({ prospekId }) {
                                     </span>
                                     <span className="text-gray-200">·</span>
                                     <span className="text-[12px] text-gray-400">
-                                        {formatTanggal(log.contacted_at)}
+                                        {formatTanggal(log.created_at)}
                                     </span>
                                     {log.sales_name && (
                                         <>
@@ -217,71 +266,14 @@ function TabKomunikasi({ prospekId }) {
                     ))}
                 </div>
             )}
-
-            {/* ── Form tambah log ── */}
-            <div className="pt-5 border-t border-gray-100">
-                <p className="text-[13px] font-semibold text-gray-700 mb-3">
-                    Tambah Catatan Komunikasi
-                </p>
-
-                <form onSubmit={handleSubmit} className="space-y-3">
-                    {/* Pilih channel */}
-                    <div className="flex gap-2">
-                        {["WA", "Email", "Call"].map((ch) => (
-                            <button
-                                key={ch}
-                                type="button"
-                                onClick={() => setChannel(ch)}
-                                className={`px-3 py-1.5 rounded-lg text-[13px] font-medium border transition ${
-                                    channel === ch
-                                        ? "bg-blue-700 text-white border-blue-700"
-                                        : "border-gray-200 text-gray-500 hover:border-blue-400 hover:text-blue-600"
-                                }`}
-                            >
-                                {ch === "WA"
-                                    ? "💬 WhatsApp"
-                                    : ch === "Email"
-                                      ? "✉️ Email"
-                                      : "📞 Telepon"}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Textarea pesan */}
-                    <textarea
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        className={`w-full border rounded-lg px-4 py-3 text-[14px] resize-none h-24 outline-none transition focus:ring-2 focus:ring-blue-50 ${
-                            formError
-                                ? "border-red-400 focus:border-red-400"
-                                : "border-gray-200 focus:border-blue-500"
-                        }`}
-                        placeholder="Tulis catatan atau hasil komunikasi di sini..."
-                    />
-
-                    {/* Error form */}
-                    {formError && (
-                        <p className="text-[12px] text-red-500">{formError}</p>
-                    )}
-
-                    <div className="flex justify-end">
-                        <button
-                            type="submit"
-                            disabled={submitting}
-                            className="px-4 py-2 rounded-lg text-[13px] font-medium bg-blue-700 text-white hover:bg-blue-800 transition disabled:opacity-50"
-                        >
-                            {submitting ? "Menyimpan..." : "Simpan Catatan"}
-                        </button>
-                    </div>
-                </form>
-            </div>
         </div>
     );
 }
 
 // ─── Komponen Utama ───────────────────────────────────────────────────────────
+
 export default function ProspekDetail({ prospek, onBack, onKonversi }) {
-    const [tab, setTab] = useState("info");
+    const [tab, setTab] = useState(prospek.defaultTab || "info");
     const [modalIngat, setModalIngat] = useState(false);
     const [modalDeal, setModalDeal] = useState(false);
     const [converted, setConverted] = useState(false);
@@ -291,16 +283,40 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
             "Yakin ingin mengonversi prospek ini menjadi client?",
         );
 
-        if (!konfirmasi) {
-            return;
-        }
+        if (!konfirmasi) return;
 
         try {
+            const csrfToken = document.cookie
+                .split("; ")
+                .find((r) => r.startsWith("XSRF-TOKEN="))
+                ?.split("=")[1];
+
+            // simpan status log
+            await fetch(`/api/prospek/${prospek.id}/status-logs`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "X-XSRF-TOKEN": csrfToken
+                        ? decodeURIComponent(csrfToken)
+                        : "",
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    status_baru: "Deal",
+                    catatan: "Prospek berhasil dikonversi menjadi client",
+                }),
+            });
+
+            // convert client
             const res = await fetch(`/api/prospek/${prospek.id}/convert`, {
                 method: "PUT",
                 headers: {
-                    Accept: "application/json",
                     "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "X-XSRF-TOKEN": csrfToken
+                        ? decodeURIComponent(csrfToken)
+                        : "",
                 },
                 credentials: "same-origin",
             });
@@ -313,16 +329,56 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                 );
             }
 
-            // Ubah status tombol menjadi "Sudah Jadi Client"
             setConverted(true);
 
-            // Kirim data hasil konversi ke komponen induk
             if (onKonversi) {
                 onKonversi(json.data);
             }
 
-            // Pesan sukses
             alert("Prospek berhasil dikonversi menjadi client.");
+
+            window.location.reload();
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
+    async function handleTolak() {
+        const konfirmasi = window.confirm("Yakin ingin menolak prospek ini?");
+
+        if (!konfirmasi) return;
+
+        try {
+            const csrfToken = document.cookie
+                .split("; ")
+                .find((r) => r.startsWith("XSRF-TOKEN="))
+                ?.split("=")[1];
+
+            const res = await fetch(`/api/prospek/${prospek.id}/status-logs`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "X-XSRF-TOKEN": csrfToken
+                        ? decodeURIComponent(csrfToken)
+                        : "",
+                },
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    status_baru: "Ditolak",
+                    catatan: "Prospek ditolak",
+                }),
+            });
+
+            const json = await res.json();
+
+            if (!res.ok) {
+                throw new Error(json.message || "Gagal mengubah status.");
+            }
+
+            alert("Prospek berhasil ditolak.");
+
+            window.location.reload();
         } catch (error) {
             alert(error.message);
         }
@@ -343,6 +399,131 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
         berhasil: "Berhasil",
         gagal: "Gagal",
     };
+
+    const TABS = [
+        { key: "info", label: "Informasi Umum" },
+        { key: "komun", label: "Riwayat Aktivitas" },
+    ];
+
+    // ─────────────────────────────────────────────────────────────
+    // KOMPONEN TAB UPDATE STATUS
+    // ─────────────────────────────────────────────────────────────
+
+    function TabUpdateStatus({ prospek, onRefresh }) {
+        const [status, setStatus] = useState(prospek.lead_status || "Baru");
+        const [loading, setLoading] = useState(false);
+        const [message, setMessage] = useState("");
+
+        const STATUS_OPTIONS = [
+            { value: "baru", label: "Baru" },
+            { value: "dihubungi", label: "Dihubungi" },
+            { value: "negosiasi", label: "Negosiasi" },
+        ];
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+            setLoading(true);
+            setMessage("");
+
+            try {
+                const res = await fetch(`/api/prospek/${prospek.id}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                    credentials: "same-origin",
+                    body: JSON.stringify({
+                        lead_status: status,
+                    }),
+                });
+
+                const json = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(
+                        json.message || "Gagal memperbarui status prospek.",
+                    );
+                }
+
+                setMessage("Status prospek berhasil diperbarui.");
+
+                // Refresh data dari parent component
+                if (onRefresh) {
+                    onRefresh();
+                }
+            } catch (error) {
+                setMessage(error.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        return (
+            <div>
+                <form onSubmit={handleSubmit} className="max-w-lg">
+                    {/* Nama Prospek */}
+                    <div className="mb-5">
+                        <label className="block text-[13px] font-medium text-gray-600 mb-2">
+                            Nama Prospek
+                        </label>
+                        <input
+                            type="text"
+                            value={prospek.nama_client || ""}
+                            disabled
+                            className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-700"
+                        />
+                    </div>
+
+                    {/* Status */}
+                    <div className="mb-5">
+                        <label className="block text-[13px] font-medium text-gray-600 mb-2">
+                            Status Prospek
+                        </label>
+                        <select
+                            value={status}
+                            onChange={(e) => setStatus(e.target.value)}
+                            className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            {STATUS_OPTIONS.map((item) => (
+                                <option key={item.value} value={item.value}>
+                                    {item.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Pesan */}
+                    {message && (
+                        <div className="mb-4 px-4 py-3 rounded-lg bg-blue-50 text-blue-700 text-sm">
+                            {message}
+                        </div>
+                    )}
+
+                    {/* Tombol */}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="px-5 py-2.5 rounded-lg bg-blue-700 text-white hover:bg-blue-800 disabled:opacity-50 transition"
+                    >
+                        {loading ? "Menyimpan..." : "Simpan Perubahan"}
+                    </button>
+                </form>
+            </div>
+        );
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // TAMBAHKAN DI BAGIAN RENDER TAB
+    // Letakkan di dalam <div className="p-7">
+    // setelah tab "komun"
+    // ─────────────────────────────────────────────────────────────
+
+    {
+        tab === "update" && (
+            <TabUpdateStatus prospek={prospek} onRefresh={onBack} />
+        );
+    }
 
     return (
         <div>
@@ -448,27 +629,25 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                     </div>
                 </div>
 
-                {!converted ? (
-                    <button
-                        onClick={handleKonversi}
-                        className="flex-shrink-0 flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-[14px] font-medium bg-green-700 text-white hover:bg-green-800 transition"
-                    >
-                        <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                {!converted && prospek.lead_status === "Negosiasi" ? (
+                    <div className="flex items-center gap-2">
+                        {/* Tombol Konversi */}
+                        <button
+                            onClick={handleKonversi}
+                            className="flex-shrink-0 flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-[14px] font-medium bg-green-700 text-white hover:bg-green-800 transition"
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                            />
-                        </svg>
-                        Konversi ke Client
-                    </button>
-                ) : (
+                            Konversi ke Client
+                        </button>
+
+                        {/* Tombol Tolak */}
+                        <button
+                            onClick={handleTolak}
+                            className="flex-shrink-0 flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-[14px] font-medium bg-red-600 text-white hover:bg-red-700 transition"
+                        >
+                            Tolak
+                        </button>
+                    </div>
+                ) : converted ? (
                     <div className="flex-shrink-0 flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-[14px] font-medium bg-white text-gray-400 border border-gray-200 cursor-not-allowed">
                         <svg
                             className="w-4 h-4 text-green-500"
@@ -485,7 +664,7 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                         </svg>
                         Sudah Jadi Client
                     </div>
-                )}
+                ) : null}
             </div>
 
             {/* Tabs */}
@@ -525,7 +704,16 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                                             " " +
                                             prospek.sales?.last_name,
                                     ],
-                                    ["Tanggal Dibuat", prospek.created_at],
+                                    [
+                                        "Tanggal Dibuat",
+                                        new Date(
+                                            prospek.created_at,
+                                        ).toLocaleDateString("id-ID", {
+                                            day: "numeric",
+                                            month: "long",
+                                            year: "numeric",
+                                        }),
+                                    ],
                                     ["Domisili", prospek.domisili],
                                 ].map(([label, val, isEmail]) => (
                                     <div
@@ -580,164 +768,8 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                     {tab === "komun" && (
                         <TabKomunikasi prospekId={prospek.id} />
                     )}
-
-                    {/* ── Pengingat ── */}
-                    {tab === "ingat" && (
-                        <div>
-                            <p className="text-[12px] uppercase tracking-widest text-gray-400 font-semibold mb-5">
-                                Pengingat Aktif
-                            </p>
-                            <div>
-                                {[
-                                    {
-                                        title: "Kirim Proposal PDF",
-                                        time: "Tenggat Waktu: 15:00 Hari Ini",
-                                        urgent: true,
-                                    },
-                                    {
-                                        title: "Konfirmasi Jadwal Demo",
-                                        time: "Besok, 09:00",
-                                        urgent: false,
-                                    },
-                                    {
-                                        title: "Review SLA Kontrak",
-                                        time: "18 Okt 2023",
-                                        urgent: false,
-                                    },
-                                ].map((r, i) => (
-                                    <div
-                                        key={i}
-                                        className="flex items-center gap-4 py-4 border-b border-gray-50 last:border-0"
-                                    >
-                                        <div
-                                            className="flex-shrink-0 cursor-pointer hover:border-blue-500 transition border-2 border-gray-300 rounded"
-                                            style={{ width: 20, height: 20 }}
-                                        />
-                                        <div>
-                                            <p className="text-[15px] font-medium text-gray-800">
-                                                {r.title}
-                                            </p>
-                                            <p
-                                                className={`text-[13px] mt-0.5 ${r.urgent ? "text-red-600 font-medium" : "text-gray-400"}`}
-                                            >
-                                                {r.time}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                            <button
-                                onClick={() => setModalIngat(true)}
-                                className="mt-4 w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-200 rounded-lg text-[14px] text-gray-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50/30 transition"
-                            >
-                                <svg
-                                    className="w-4 h-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M12 4v16m8-8H4"
-                                    />
-                                </svg>
-                                Tambah Pengingat Baru
-                            </button>
-                        </div>
-                    )}
-
-                    {/* ── Deal Terkait ── */}
-                    {tab === "deal" && (
-                        <div>
-                            <div className="flex items-center justify-between mb-5">
-                                <p className="text-[15px] font-semibold text-gray-800">
-                                    Peluang Aktif untuk {prospek.nama_client}
-                                </p>
-                                <button
-                                    onClick={() => setModalDeal(true)}
-                                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[13px] font-medium bg-blue-700 text-white hover:bg-blue-800 transition"
-                                >
-                                    <svg
-                                        className="w-3.5 h-3.5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M12 4v16m8-8H4"
-                                        />
-                                    </svg>
-                                    Tambah Deal
-                                </button>
-                            </div>
-                            <div className="flex flex-col gap-3">
-                                {[
-                                    {
-                                        nama: "Paket Implementasi Software ERP",
-                                        nilai: "Rp 150.000.000",
-                                        status: "negosiasi",
-                                        statusLabel: "Dalam Negosiasi",
-                                        tgl: "Estimasi Closing: 25 Mei",
-                                    },
-                                    {
-                                        nama: "Maintenance Server Tahunan",
-                                        nilai: "Rp 45.000.000",
-                                        status: "proposal",
-                                        statusLabel: "Proposal Dikirim",
-                                        tgl: "Estimasi Closing: 10 Juni",
-                                    },
-                                    {
-                                        nama: "Training Karyawan (Batch 1)",
-                                        nilai: "Rp 25.000.000",
-                                        status: "berhasil",
-                                        statusLabel: "Deal Berhasil",
-                                        tgl: "Selesai: 20 April",
-                                    },
-                                ].map((d, i) => (
-                                    <div
-                                        key={i}
-                                        className="border border-gray-200 rounded-lg px-5 py-4 flex items-center justify-between bg-white hover:bg-gray-50 transition"
-                                    >
-                                        <div>
-                                            <p className="text-[15px] font-medium text-gray-800">
-                                                {d.nama}
-                                            </p>
-                                            <p className="text-[13px] text-gray-500 mt-0.5">
-                                                {d.nilai}
-                                            </p>
-                                        </div>
-                                        <div className="text-right">
-                                            <span
-                                                className={`px-3 py-1 rounded-full text-[12px] font-medium ${DEAL_BADGE[d.status]}`}
-                                            >
-                                                {d.statusLabel}
-                                            </span>
-                                            <p className="text-[12px] text-gray-400 mt-1.5 flex items-center gap-1 justify-end">
-                                                📅 {d.tgl}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
                 </div>
             </div>
-
-            {/* Modals */}
-            <ModalTambahPengingat
-                show={modalIngat}
-                onClose={() => setModalIngat(false)}
-            />
-            <ModalTambahDeal
-                show={modalDeal}
-                onClose={() => setModalDeal(false)}
-            />
         </div>
     );
 }

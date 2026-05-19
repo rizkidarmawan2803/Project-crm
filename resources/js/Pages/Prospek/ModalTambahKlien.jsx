@@ -177,8 +177,6 @@ export default function ModalTambahKlien({ show, onClose, onSimpan, sales = [] }
                         <option value="Baru">Baru</option>
                         <option value="Dihubungi">Dihubungi</option>
                         <option value="Negosiasi">Negosiasi</option>
-                        <option value="Deal">Deal</option>
-                        <option value="Ditolak">Ditolak</option>
                     </select>
                 </FormField>
 
