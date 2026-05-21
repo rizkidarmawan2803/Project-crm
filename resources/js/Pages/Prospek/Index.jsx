@@ -28,7 +28,7 @@ export default function Index({ sales = [] }) {
     const [pagination, setPagination] = useState(null);
     const [activeFilter, setActiveFilter] = useState("Semua");
     const [loading, setLoading] = useState(false);
-
+    //
     useEffect(() => {
         fetchProspeks();
     }, [activeFilter]);
