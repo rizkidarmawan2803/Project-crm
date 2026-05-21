@@ -31,6 +31,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
     Route::get('/prospek', [ProspekController::class, 'index'])->name('prospek');
     Route::get('/pelanggan', [PelangganController::class, 'index'])->name('pelanggan');
+    Route::get('/pelanggan/{id}', [PelangganController::class, 'show'])->name('pelanggan.show');
     Route::get('/pengguna', [ManajemenPenggunaController::class, 'index'])->name('pengguna');
 
     Route::prefix('api')->group(function(){

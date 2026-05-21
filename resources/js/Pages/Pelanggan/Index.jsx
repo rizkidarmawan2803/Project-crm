@@ -3,6 +3,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import React, { useState, useEffect } from "react";
 import AppLayout from "@/Layouts/AppLayout";
+import { router } from "@inertiajs/react";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ICON HELPERS
@@ -413,6 +414,7 @@ export default function Pelanggan({
                                 pelanggan.map((row, i) => (
                                     <tr
                                         key={row.id}
+                                        onClick={() => router.visit(`/pelanggan/${row.id}`)}
                                         className={`hover:bg-gray-50 transition-colors cursor-pointer ${
                                             i < pelanggan.length - 1
                                                 ? "border-b border-gray-50"

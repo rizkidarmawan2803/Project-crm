@@ -17,8 +17,10 @@ class PelangganController extends Controller
         | Query Data Pelanggan
         |--------------------------------------------------------------------------
         */
+        $userId = auth()->user()->id;
         $query = LeadClient::with('sales')
-            ->where('lead_status', 'Deal');
+            ->where('lead_status', 'Deal')
+            ->where('sales_id', $userId);
 
         /*
         |--------------------------------------------------------------------------
@@ -54,7 +56,7 @@ class PelangganController extends Controller
         $pelangganAktif = $totalPelanggan;
 
         // Jumlah prospek yang berhasil dikonversi menjadi pelanggan
-        $prospekBerhasil = LeadClient::where('lead_status', 'Deal')->count();
+        $prospekBerhasil = LeadClient::where('sales_id', $userId)->where('lead_status', 'Deal')->count();
 
         $stats = [
             [
@@ -171,11 +173,13 @@ class PelangganController extends Controller
      */
     public function show($id)
     {
+        $userId = auth()->user()->id;
         $client = LeadClient::with([
             'sales',
             'communicationLogs.user',
             'reminders',
         ])
+            ->where('sales_id', $userId)
             ->where('lead_status', 'Deal')
             ->findOrFail($id);
 

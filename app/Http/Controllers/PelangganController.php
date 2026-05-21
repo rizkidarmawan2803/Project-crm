@@ -4,72 +4,48 @@ namespace App\Http\Controllers;
 
 use App\Models\LeadClient;
 use Inertia\Inertia;
+use Inertia\Response;
 use Carbon\Carbon;
 
 class PelangganController extends Controller
 {
-    public function index()
+    /*
+    |--------------------------------------------------------------------------
+    | HALAMAN INDEX PELANGGAN
+    |--------------------------------------------------------------------------
+    */
+    public function index(): Response
     {
         /*
         |--------------------------------------------------------------------------
-        | Ambil semua data pelanggan
+        | Ambil pelanggan
         |--------------------------------------------------------------------------
-        | Data pelanggan diambil dari tabel lead_clients
-        | dengan kondisi lead_status = 'Deal'
-        | karena prospek yang berhasil dikonversi menjadi pelanggan
-        | akan memiliki status tersebut.
+        | Pelanggan = prospek dengan status Deal
         */
+        $userId = auth()->user()->id;
+
         $clients = LeadClient::with('sales')
+            ->where('sales_id', $userId)
             ->where('lead_status', 'Deal')
-            ->orderBy('created_at', 'desc')
+            ->latest()
             ->get();
 
         /*
         |--------------------------------------------------------------------------
-        | Statistik Dashboard
+        | Statistik
         |--------------------------------------------------------------------------
         */
-        $totalPelanggan = $clients->count();
-
-        // Sementara seluruh pelanggan dianggap aktif
-        $pelangganAktif = $totalPelanggan;
-
-        // Jumlah prospek yang berhasil dikonversi
-        $prospekBerhasil = LeadClient::where('lead_status', 'Deal')->count();
-
-        $stats = [
-            [
-                'label'  => 'Total Pelanggan',
-                'value'  => $totalPelanggan,
-                'change' => '+12 vs bulan lalu',
-                'trend'  => 'up',
-                'icon'   => 'wallet',
-                'color'  => 'blue',
-            ],
-            [
-                'label'  => 'Pelanggan Aktif',
-                'value'  => $pelangganAktif,
-                'change' => '+3.2% vs bulan lalu',
-                'trend'  => 'up',
-                'icon'   => 'chart-bar',
-                'color'  => 'green',
-            ],
-            [
-                'label'  => 'Prospek Berhasil',
-                'value'  => $prospekBerhasil,
-                'change' => 'Stabil vs bulan lalu',
-                'trend'  => 'stable',
-                'icon'   => 'globe',
-                'color'  => 'orange',
-            ],
+        $summary = [
+            'total'   => $clients->count(),
+            'aktif'   => $clients->count(),
+            'berhasil' => LeadClient::where('sales_id', $userId)
+                ->where('lead_status', 'Deal')
+                ->count(),
         ];
 
         /*
         |--------------------------------------------------------------------------
-        | Format Data untuk React (Pelanggan.jsx)
-        |--------------------------------------------------------------------------
-        | Kolom "Account Manager Assigned" akan menampilkan
-        | nama pelanggan (nama_client), bukan nama PIC/Sales.
+        | Warna avatar
         |--------------------------------------------------------------------------
         */
         $colors = [
@@ -82,19 +58,18 @@ class PelangganController extends Controller
             'gray',
         ];
 
+        /*
+        |--------------------------------------------------------------------------
+        | Format data pelanggan
+        |--------------------------------------------------------------------------
+        */
         $pelanggan = $clients->map(function ($client) use ($colors) {
-            /*
-            |--------------------------------------------------------------------------
-            | Nama yang akan ditampilkan pada kolom
-            | "Account Manager Assigned"
-            |--------------------------------------------------------------------------
-            | Menggunakan nama pelanggan.
-            */
+
             $displayName = $client->nama_client ?: 'Tidak Ada';
 
             /*
             |--------------------------------------------------------------------------
-            | Ambil inisial dari nama pelanggan
+            | Inisial
             |--------------------------------------------------------------------------
             */
             $inisial = collect(explode(' ', $displayName))
@@ -103,65 +78,166 @@ class PelangganController extends Controller
                 ->take(2)
                 ->implode('');
 
-            if ($inisial === '') {
-                $inisial = 'NA';
-            }
+            $inisial = $inisial ?: 'NA';
 
             /*
             |--------------------------------------------------------------------------
-            | Warna avatar berdasarkan sales_id
+            | Avatar color
             |--------------------------------------------------------------------------
             */
-            $avatarColor = $colors[$client->sales_id % count($colors)];
+            $salesId = $client->sales_id ?? 0;
+
+            $avatarColor = $colors[
+                $salesId % count($colors)
+            ];
 
             return [
-                'id' => $client->id,
-
-                // Nama perusahaan, jika kosong gunakan nama pelanggan
-                'perusahaan' => $client->company_name ?: $client->nama_client,
-
-                // Kontak (telepon)
-                'kontak' => $client->phone,
 
                 /*
                 |--------------------------------------------------------------------------
-                | Account Manager Assigned
+                | IDENTITAS
                 |--------------------------------------------------------------------------
-                | Walaupun nama field tetap "manager" agar kompatibel
-                | dengan Pelanggan.jsx, nilainya berisi nama pelanggan.
+                */
+                'id' => $client->id,
+
+                'nama_client' => $client->nama_client,
+
+                'company_name' => $client->company_name,
+
+                'perusahaan' => $client->company_name
+                    ?: $client->nama_client,
+
+                /*
+                |--------------------------------------------------------------------------
+                | KONTAK
+                |--------------------------------------------------------------------------
+                */
+                'kontak' => $client->phone,
+
+                'phone' => $client->phone,
+
+                'email' => $client->email,
+
+                /*
+                |--------------------------------------------------------------------------
+                | ACCOUNT MANAGER
+                |--------------------------------------------------------------------------
                 */
                 'manager' => $displayName,
 
-                // Inisial nama pelanggan
                 'inisial' => $inisial,
 
-                // Warna avatar
                 'avatarColor' => $avatarColor,
 
-                // Tanggal bergabung
-                'tanggal' => Carbon::parse($client->created_at)
-                    ->translatedFormat('d F Y'),
+                /*
+                |--------------------------------------------------------------------------
+                | SALES PIC
+                |--------------------------------------------------------------------------
+                */
+                'sales' => [
+                    'id' => $client->sales?->id,
+                    'name' => $client->sales?->name,
+                ],
 
-                // Status akun
+                /*
+                |--------------------------------------------------------------------------
+                | STATUS
+                |--------------------------------------------------------------------------
+                */
                 'status' => 'Aktif',
 
-                // Data tambahan
-                'nama_client' => $client->nama_client,
-                'email' => $client->email,
-                'company_name' => $client->company_name,
+                'lead_status' => $client->lead_status,
+
+                /*
+                |--------------------------------------------------------------------------
+                | INFORMASI TAMBAHAN
+                |--------------------------------------------------------------------------
+                */
+                'sumber' => $client->sumber,
+
+                'domisili' => $client->domisili,
+
+                'alamat_lengkap' => $client->alamat_lengkap,
+
+                'product_interest' => $client->product_interest,
+
+                /*
+                |--------------------------------------------------------------------------
+                | TANGGAL
+                |--------------------------------------------------------------------------
+                */
+                'tanggal' => Carbon::parse(
+                    $client->created_at
+                )->translatedFormat('d F Y'),
+
                 'created_at' => $client->created_at,
             ];
-        })->values();
+        });
 
         /*
         |--------------------------------------------------------------------------
-        | Kirim ke Inertia React
+        | Stats card frontend
         |--------------------------------------------------------------------------
         */
-        return Inertia::render('Pelanggan', [
+        $stats = [
+            [
+                'label'  => 'Total Pelanggan',
+                'value'  => $summary['total'],
+                'change' => '+12 vs bulan lalu',
+                'trend'  => 'up',
+                'icon'   => 'wallet',
+                'color'  => 'blue',
+            ],
+            [
+                'label'  => 'Pelanggan Aktif',
+                'value'  => $summary['aktif'],
+                'change' => '+3.2% vs bulan lalu',
+                'trend'  => 'up',
+                'icon'   => 'chart-bar',
+                'color'  => 'green',
+            ],
+            [
+                'label'  => 'Prospek Berhasil',
+                'value'  => $summary['berhasil'],
+                'change' => 'Stabil vs bulan lalu',
+                'trend'  => 'stable',
+                'icon'   => 'globe',
+                'color'  => 'orange',
+            ],
+        ];
+
+        /*
+        |--------------------------------------------------------------------------
+        | Render inertia
+        |--------------------------------------------------------------------------
+        */
+        return Inertia::render('Pelanggan/Index', [
             'stats'          => $stats,
+            'summary'        => $summary,
             'pelanggan'      => $pelanggan,
-            'totalPelanggan' => $totalPelanggan,
+            'totalPelanggan' => $summary['total'],
         ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | DETAIL PELANGGAN
+    |--------------------------------------------------------------------------
+    */
+    public function show($id)
+    {
+        try {
+            $userId = auth()->user()->id;
+            $pelanggan = LeadClient::where('sales_id', $userId)
+                ->where('lead_status', 'Deal')
+                ->findOrFail($id);
+
+            return Inertia::render('Pelanggan/Show', [
+                'id' => $id,
+            ]);
+
+        } catch (\Exception $e) {
+            abort(404);
+        }
     }
 }
