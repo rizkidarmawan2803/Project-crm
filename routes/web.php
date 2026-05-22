@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\StatusLogController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\LeadClientController;
 use App\Http\Controllers\Api\AktivitasController;
+use App\Http\Controllers\Api\DealController;
 
 
 
@@ -89,5 +90,10 @@ Route::get('/aktivitas/{leadClientId}', [AktivitasController::class, 'index']);
 
 // Menambahkan aktivitas baru
 Route::post('/aktivitas', [AktivitasController::class, 'store']);
+
+Route::get('/deals', [DealController::class, 'index']);
+Route::post('/deals', [DealController::class, 'store']);
+Route::delete('/deals/{id}', [DealController::class, 'destroy']);
+Route::put('/deals/{id}/status', [DealController::class, 'updateStatus']);
     });
 });
