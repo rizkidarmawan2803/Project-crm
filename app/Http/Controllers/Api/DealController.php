@@ -98,7 +98,7 @@ class DealController extends Controller
         $validated = $request->validate([
             'lead_client_id' => 'required|exists:lead_clients,id',
             'payment_status' => 'required|in:unpaid,partial,paid',
-            'deal_file'      => 'nullable|file|mimes:pdf,doc,docx,zip|max:10240',
+            'deal_file'      => 'nullable|file|mimes:pdf,doc,docx,zip|max:100240',
             'catatan'        => 'nullable|string',
         ]);
 

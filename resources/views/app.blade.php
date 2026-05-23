@@ -7,7 +7,7 @@
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
         <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-        
+
         <style>
             .font-manrope { font-family: 'Manrope', sans-serif; }
         </style>
@@ -18,5 +18,8 @@
     </head>
     <body class="font-sans antialiased">
         @inertia
+
+        {{-- Chart.js untuk grafik di Dashboard --}}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
     </body>
 </html>
