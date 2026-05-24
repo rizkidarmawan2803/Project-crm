@@ -15,7 +15,12 @@ class AuthController extends Controller
     public function showLogin()
     {
         if (Auth::check()) {
-            return redirect()->route('dashboard');
+            // Redirect sesuai role
+            if (Auth::user()->is_admin) {
+                return redirect()->route('dashboard');
+            } else {
+                return redirect()->route('prospek');
+            }
         }
 
         return Inertia::render('Auth/Login');
@@ -39,19 +44,21 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        // Cek apakah akun aktif
         if ($user->status === 'inactive') {
             Auth::logout();
-
             return back()->withErrors([
                 'email' => 'Akun anda tidak aktif.',
             ]);
         }
 
-        // Regenerasi session untuk keamanan
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard');
+        // ← Redirect berdasarkan role
+        if ($user->is_admin) {
+            return redirect()->route('dashboard');
+        } else {
+            return redirect()->route('prospek');
+        }
     }
 
     /**

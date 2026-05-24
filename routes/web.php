@@ -20,15 +20,14 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 });
 
+
 // ─── PROTECTED (sudah login) ──────────────────────────
 Route::middleware('auth')->group(function () {
-    Route::post('/logout',        [AuthController::class, 'logout'])->name('logout');
-    Route::get('/',               [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard',      [DashboardController::class, 'index']);
-    Route::get('/prospek',        [ProspekController::class, 'index'])->name('prospek');
-    Route::get('/pelanggan',      [PelangganController::class, 'index'])->name('pelanggan');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/prospek', [ProspekController::class, 'index'])->name('prospek');
+    Route::get('/pelanggan', [PelangganController::class, 'index'])->name('pelanggan');
     Route::get('/pelanggan/{id}', [PelangganController::class, 'show'])->name('pelanggan.show');
-    Route::get('/pengguna',       [ManajemenPenggunaController::class, 'index'])->name('pengguna');
+
 
     Route::prefix('api')->group(function () {
 
@@ -39,7 +38,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/users',       [UserController::class, 'store']);
         Route::get('/users/{id}',   [UserController::class, 'show']);
         Route::put('/users/{id}',   [UserController::class, 'update']);
-        Route::delete('/users/{id}',[UserController::class, 'destroy']);
+        Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
         // ==============================
         // DASHBOARD
@@ -55,9 +54,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/prospek/{id}/status-logs',  [StatusLogController::class, 'index']);
         Route::post('/prospek/{id}/status-logs', [StatusLogController::class, 'store']);
 
+
         // ==============================
         // PROSPEK / LEAD CLIENTS
         // ==============================
+        Route::get('/prospek/search-sales', [LeadClientController::class, 'searchSales']);
         Route::get('/prospek/export/csv',       [LeadClientController::class, 'exportCsv']); // ← harus SEBELUM /{id}
         Route::get('/prospek',                  [LeadClientController::class, 'index']);
         Route::post('/prospek',                 [LeadClientController::class, 'store']);
@@ -86,4 +87,10 @@ Route::middleware('auth')->group(function () {
         Route::delete('/deals/{id}',        [DealController::class, 'destroy']);
         Route::put('/deals/{id}/status',    [DealController::class, 'updateStatus']);
     });
+});
+
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/pengguna', [ManajemenPenggunaController::class, 'index'])->name('pengguna');
 });

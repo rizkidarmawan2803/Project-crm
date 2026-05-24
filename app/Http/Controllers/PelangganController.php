@@ -74,7 +74,7 @@ class PelangganController extends Controller
             */
             $inisial = collect(explode(' ', $displayName))
                 ->filter()
-                ->map(fn ($word) => strtoupper(substr($word, 0, 1)))
+                ->map(fn($word) => strtoupper(substr($word, 0, 1)))
                 ->take(2)
                 ->implode('');
 
@@ -87,9 +87,7 @@ class PelangganController extends Controller
             */
             $salesId = $client->sales_id ?? 0;
 
-            $avatarColor = $colors[
-                $salesId % count($colors)
-            ];
+            $avatarColor = $colors[$salesId % count($colors)];
 
             return [
 
@@ -227,16 +225,24 @@ class PelangganController extends Controller
     public function show($id)
     {
         try {
-            $userId = auth()->user()->id;
-            $pelanggan = LeadClient::where('sales_id', $userId)
-                ->where('lead_status', 'Deal')
-                ->findOrFail($id);
+
+            $user = auth()->user();
+            $isAdmin = (int) $user->is_admin === 1;
+
+            $query = LeadClient::where('lead_status', 'Deal');
+
+            // Jika bukan admin → hanya boleh lihat miliknya sendiri
+            if (!$isAdmin) {
+                $query->where('sales_id', $user->id);
+            }
+
+            $pelanggan = $query->findOrFail($id);
 
             return Inertia::render('Pelanggan/Show', [
                 'id' => $id,
             ]);
-
         } catch (\Exception $e) {
+
             abort(404);
         }
     }

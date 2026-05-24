@@ -9,22 +9,27 @@ use Carbon\Carbon;
 
 class PelangganController extends Controller
 {
-    
     public function index(Request $request)
     {
+        $user = auth()->user();
+        $isAdmin = (int) $user->is_admin === 1;
+
         /*
         |--------------------------------------------------------------------------
         | Query Data Pelanggan
         |--------------------------------------------------------------------------
         */
-        $userId = auth()->user()->id;
         $query = LeadClient::with('sales')
-            ->where('lead_status', 'Deal')
-            ->where('sales_id', $userId);
+            ->where('lead_status', 'Deal');
+
+        // Jika bukan admin → hanya data milik sales tersebut
+        if (!$isAdmin) {
+            $query->where('sales_id', $user->id);
+        }
 
         /*
         |--------------------------------------------------------------------------
-        | Pencarian (opsional)
+        | Search
         |--------------------------------------------------------------------------
         */
         if ($request->search) {
@@ -47,16 +52,20 @@ class PelangganController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Statistik Dashboard
+        | Statistik
         |--------------------------------------------------------------------------
         */
-        $totalPelanggan = $clients->count();
+        $summaryQuery = LeadClient::where('lead_status', 'Deal');
 
-        // Untuk sementara seluruh pelanggan dianggap aktif
+        if (!$isAdmin) {
+            $summaryQuery->where('sales_id', $user->id);
+        }
+
+        $totalPelanggan = $summaryQuery->count();
+
         $pelangganAktif = $totalPelanggan;
 
-        // Jumlah prospek yang berhasil dikonversi menjadi pelanggan
-        $prospekBerhasil = LeadClient::where('sales_id', $userId)->where('lead_status', 'Deal')->count();
+        $prospekBerhasil = $totalPelanggan;
 
         $stats = [
             [
@@ -87,10 +96,7 @@ class PelangganController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Mapping Data untuk React (Pelanggan.jsx)
-        |--------------------------------------------------------------------------
-        | Kolom "Account Manager Assigned" akan menampilkan nama pelanggan
-        | (nama_client), bukan nama PIC/Sales.
+        | Mapping Data
         |--------------------------------------------------------------------------
         */
         $colors = [
@@ -104,7 +110,7 @@ class PelangganController extends Controller
         ];
 
         $pelanggan = $clients->map(function ($client) use ($colors) {
-            // Inisial dari nama pelanggan
+
             $inisial = collect(explode(' ', $client->nama_client))
                 ->filter()
                 ->map(fn ($word) => strtoupper(substr($word, 0, 1)))
@@ -115,38 +121,28 @@ class PelangganController extends Controller
                 $inisial = 'NA';
             }
 
-            // Warna avatar berdasarkan sales_id
             $avatarColor = $colors[$client->sales_id % count($colors)];
 
             return [
                 'id' => $client->id,
 
-                // Nama perusahaan (jika kosong gunakan nama pelanggan)
                 'perusahaan' => $client->company_name ?: $client->nama_client,
 
-                // Nomor kontak
                 'kontak' => $client->phone,
 
-                // Kolom "Account Manager Assigned"
-                // Menampilkan nama pelanggan
-                'manager' => $client->nama_client,
+                'manager' => $client->sales
+                    ? trim($client->sales->first_name . ' ' . $client->sales->last_name)
+                    : '-',
 
-                // Inisial nama pelanggan
                 'inisial' => $inisial,
 
-                // Warna avatar
                 'avatarColor' => $avatarColor,
 
-                // Tanggal bergabung
                 'tanggal' => Carbon::parse($client->created_at)
                     ->translatedFormat('d F Y'),
 
-                // Status akun
                 'status' => 'Aktif',
 
-                /*
-                | Data tambahan
-                */
                 'nama_client' => $client->nama_client,
                 'email' => $client->email,
                 'company_name' => $client->company_name,
@@ -154,11 +150,6 @@ class PelangganController extends Controller
             ];
         })->values();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Response JSON
-        |--------------------------------------------------------------------------
-        */
         return response()->json([
             'status' => 'success',
             'stats' => $stats,
@@ -167,21 +158,24 @@ class PelangganController extends Controller
         ]);
     }
 
-    /**
-     * GET /api/pelanggan/{id}
-     * Menampilkan detail pelanggan
-     */
     public function show($id)
     {
-        $userId = auth()->user()->id;
-        $client = LeadClient::with([
+        $user = auth()->user();
+        $isAdmin = (int) $user->is_admin === 1;
+
+        $query = LeadClient::with([
             'sales',
             'communicationLogs.user',
             'reminders',
         ])
-            ->where('sales_id', $userId)
-            ->where('lead_status', 'Deal')
-            ->findOrFail($id);
+        ->where('lead_status', 'Deal');
+
+        // Sales hanya boleh lihat miliknya sendiri
+        if (!$isAdmin) {
+            $query->where('sales_id', $user->id);
+        }
+
+        $client = $query->findOrFail($id);
 
         return response()->json([
             'status' => 'success',

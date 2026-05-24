@@ -40,7 +40,6 @@ class DealController extends Controller
 
             // Return path relatif untuk disimpan di DB
             return 'deals/' . $safeName;
-
         } catch (\Throwable $e) {
             \Log::error('DealController@saveFile error: ' . $e->getMessage());
             return null;
@@ -50,37 +49,44 @@ class DealController extends Controller
     // GET /api/deals?lead_client_id=xxx
     public function index(Request $request)
     {
-        $userId = auth()->id();
-        if (!$userId) {
-            return response()->json(['success' => false, 'message' => 'Unauthenticated.'], 401);
+        $user = auth()->user();
+        $isAdmin = (int) $user->is_admin === 1;
+
+        $query = Deal::with(['leadClient', 'user']);
+
+        // HANYA sales dibatasi
+        if (!$isAdmin) {
+            $query->whereHas('leadClient', function ($q) use ($user) {
+                $q->where('sales_id', $user->id);
+            });
         }
 
-        $query = Deal::with(['leadClient', 'user'])
-            ->whereHas('leadClient', function ($q) use ($userId) {
-                $q->where('sales_id', $userId);
-            });
-
+        // Filter pelanggan
         if ($request->lead_client_id) {
             $query->where('lead_client_id', $request->lead_client_id);
         }
 
         return response()->json([
             'success' => true,
-            'data'    => $query->orderBy('created_at', 'desc')->get()->map(fn($deal) => [
-                'id'             => $deal->id,
-                'lead_client_id' => $deal->lead_client_id,
-                'user_id'        => $deal->user_id,
-                'payment_status' => $deal->payment_status,
-                'deal_file'      => $deal->deal_file,
-                'deal_file_url'  => $this->fileUrl($deal->deal_file),
-                'catatan'        => $deal->catatan,
-                'created_at'     => $deal->created_at,
-                'user'           => $deal->user ? [
-                    'id'         => $deal->user->id,
-                    'first_name' => $deal->user->first_name,
-                    'last_name'  => $deal->user->last_name,
-                ] : null,
-            ]),
+            'data' => $query
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(fn($deal) => [
+                    'id'             => $deal->id,
+                    'lead_client_id' => $deal->lead_client_id,
+                    'user_id'        => $deal->user_id,
+                    'payment_status' => $deal->payment_status,
+                    'deal_file'      => $deal->deal_file,
+                    'deal_file_url'  => $this->fileUrl($deal->deal_file),
+                    'catatan'        => $deal->catatan,
+                    'created_at'     => $deal->created_at,
+
+                    'user' => $deal->user ? [
+                        'id'         => $deal->user->id,
+                        'first_name' => $deal->user->first_name,
+                        'last_name'  => $deal->user->last_name,
+                    ] : null,
+                ]),
         ]);
     }
 
