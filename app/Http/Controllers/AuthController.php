@@ -61,43 +61,6 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Tampilkan halaman register
-     */
-    public function showRegister()
-    {
-        if (Auth::check()) {
-            return redirect()->route('dashboard');
-        }
-
-        return Inertia::render('Auth/Register');
-    }
-
-    /**
-     * Proses register (otomatis membuat akun Admin)
-     */
-    public function register(Request $request)
-    {
-        $request->validate([
-            'first_name' => 'required|string|max:50',
-            'last_name'  => 'nullable|string|max:50',
-            'email'      => 'required|email|unique:users,email',
-            'password'   => 'required|min:6|confirmed',
-        ]);
-
-        // Simpan user baru sebagai Admin
-        User::create([
-            'first_name' => $request->first_name,
-            'last_name'  => $request->last_name,
-            'email'      => $request->email,
-            'password'   => bcrypt($request->password),
-            'is_admin'   => 1,          // Otomatis Admin
-            'status'     => 'active',   // Otomatis Aktif
-        ]);
-
-        return redirect()->route('login')
-            ->with('success', 'Registrasi berhasil. Silakan login.');
-    }
 
     /**
      * Proses logout
