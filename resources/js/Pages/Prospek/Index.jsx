@@ -23,7 +23,7 @@ export default function Index({ sales = [] }) {
         dihubungi: 0,
         negosiasi: 0,
         deal: 0,
-        ditolak: 0,
+        belum_setuju: 0,
     });
     const [pagination, setPagination] = useState(null);
     const [activeFilter, setActiveFilter] = useState("Semua");

@@ -7,7 +7,7 @@ const STATUS_TABS = [
     { key: "Dihubungi", label: "Dihubungi" },
     { key: "Negosiasi", label: "Negosiasi" },
     { key: "Deal", label: "Deal" },
-    { key: "Ditolak", label: "Ditolak" },
+    { key: "Belum Setuju", label: "Belum Tertarik" },
 ];
 
 const BADGE = {
