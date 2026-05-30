@@ -198,7 +198,7 @@ function StatistikProspek() {
         <div className="bg-white rounded-xl border border-gray-100 p-5 mb-5">
             {/* Header + Filter */}
             <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-                <h2 className="text-sm font-semibold text-gray-800">Statistik Prospek</h2>
+                <h2 className="text-sm font-semibold text-gray-800">Statistik</h2>
                 <div className="flex gap-2 flex-wrap">
                     <select value={filter.status} onChange={e => setFilter(f => ({ ...f, status: e.target.value }))} className={selectCls()}>
                         {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}

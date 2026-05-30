@@ -366,7 +366,7 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                 credentials: "same-origin",
                 body: JSON.stringify({
                     status_baru: "Ditolak",
-                    catatan: "Prospek ditolak",
+                    catatan: "Pelanggan belum tertarik",
                 }),
             });
 
@@ -644,7 +644,7 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                             onClick={handleTolak}
                             className="flex-shrink-0 flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-[14px] font-medium bg-red-600 text-white hover:bg-red-700 transition"
                         >
-                            Tolak
+                            Belum Tertarik
                         </button>
                     </div>
                 ) : converted ? (

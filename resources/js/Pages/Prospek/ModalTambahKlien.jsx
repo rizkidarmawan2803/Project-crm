@@ -9,17 +9,22 @@ import Modal, {
     BtnOutline,
 } from "./Modal";
 
-export default function ModalTambahKlien({ show, onClose, onSimpan, sales = [] }) {
+export default function ModalTambahKlien({
+    show,
+    onClose,
+    onSimpan,
+    sales = [],
+}) {
     const initialForm = {
-        nama_client:      '',
-        company_name:     '',
-        phone:            '',
-        email:            '',
-        product_interest: '',
-        sumber:           '',
-        lead_status:      'Baru',
-        domisili:         '',
-        alamat_lengkap:   '',
+        nama_client: "",
+        company_name: "",
+        phone: "",
+        email: "",
+        product_interest: "",
+        sumber: "",
+        lead_status: "Baru",
+        domisili: "",
+        alamat_lengkap: "",
     };
 
     const [form, setForm] = useState(initialForm);
@@ -36,11 +41,11 @@ export default function ModalTambahKlien({ show, onClose, onSimpan, sales = [] }
 
     const validate = () => {
         const newErrors = {};
-        if (!form.nama_client)    newErrors.nama_client    = 'Nama client wajib diisi';
-        if (!form.phone)          newErrors.phone          = 'Nomor telepon wajib diisi';
-        if (!form.sumber)         newErrors.sumber         = 'Sumber wajib diisi';
-        if (!form.domisili)       newErrors.domisili       = 'Domisili wajib diisi';
-        if (!form.alamat_lengkap) newErrors.alamat_lengkap = 'Alamat lengkap wajib diisi';
+        if (!form.nama_client)
+            newErrors.nama_client = "Nama client wajib diisi";
+        if (!form.phone) newErrors.phone = "Nomor telepon wajib diisi";
+        if (!form.sumber) newErrors.sumber = "Sumber wajib diisi";
+        if (!form.email) newErrors.email = "Email wajib diisi";
         return newErrors;
     };
 
@@ -81,7 +86,7 @@ export default function ModalTambahKlien({ show, onClose, onSimpan, sales = [] }
                 <>
                     <BtnOutline onClick={handleClose}>Batal</BtnOutline>
                     <BtnPrimary onClick={handleSubmit} disabled={loading}>
-                        {loading ? 'Menyimpan...' : 'Buat Klien Baru'}
+                        {loading ? "Menyimpan..." : "Buat Klien Baru"}
                     </BtnPrimary>
                 </>
             }
@@ -91,16 +96,18 @@ export default function ModalTambahKlien({ show, onClose, onSimpan, sales = [] }
             </p>
             <FormGrid>
                 {/* Nama Client */}
-                <FormField label="Nama Client">
+                <FormField label="Nama Client *">
                     <input
                         name="nama_client"
-                        className={`${inputCls} ${errors.nama_client ? 'border-red-400' : ''}`}
+                        className={`${inputCls} ${errors.nama_client ? "border-red-400" : ""}`}
                         placeholder="Masukkan nama Client"
                         value={form.nama_client}
                         onChange={handleChange}
                     />
                     {errors.nama_client && (
-                        <p className="text-[11px] text-red-500 mt-1">{errors.nama_client}</p>
+                        <p className="text-[11px] text-red-500 mt-1">
+                            {errors.nama_client}
+                        </p>
                     )}
                 </FormField>
 
@@ -116,16 +123,18 @@ export default function ModalTambahKlien({ show, onClose, onSimpan, sales = [] }
                 </FormField>
 
                 {/* Nomor Telepon */}
-                <FormField label="Nomor Telepon">
+                <FormField label="Nomor Telepon *">
                     <input
                         name="phone"
-                        className={`${inputCls} ${errors.phone ? 'border-red-400' : ''}`}
+                        className={`${inputCls} ${errors.phone ? "border-red-400" : ""}`}
                         placeholder="+62 812 XXXXXXX"
                         value={form.phone}
                         onChange={handleChange}
                     />
                     {errors.phone && (
-                        <p className="text-[11px] text-red-500 mt-1">{errors.phone}</p>
+                        <p className="text-[11px] text-red-500 mt-1">
+                            {errors.phone}
+                        </p>
                     )}
                 </FormField>
 
@@ -133,12 +142,17 @@ export default function ModalTambahKlien({ show, onClose, onSimpan, sales = [] }
                 <FormField label="Email Kontak">
                     <input
                         name="email"
-                        className={inputCls}
+                        className={`${inputCls} ${errors.email ? "border-red-400" : ""}`}
                         type="email"
                         placeholder="email@perusahaan.com"
                         value={form.email}
                         onChange={handleChange}
                     />
+                    {errors.email && (
+                        <p className="text-[11px] text-red-500 mt-1">
+                            {errors.email}
+                        </p>
+                    )}
                 </FormField>
 
                 {/* Produk */}
@@ -156,41 +170,42 @@ export default function ModalTambahKlien({ show, onClose, onSimpan, sales = [] }
                 <FormField label="Sumber">
                     <input
                         name="sumber"
-                        className={`${inputCls} ${errors.sumber ? 'border-red-400' : ''}`}
+                        className={`${inputCls} ${errors.sumber ? "border-red-400" : ""}`}
                         placeholder="Google Ads, Instagram, Referral, dll"
                         value={form.sumber}
                         onChange={handleChange}
                     />
                     {errors.sumber && (
-                        <p className="text-[11px] text-red-500 mt-1">{errors.sumber}</p>
+                        <p className="text-[11px] text-red-500 mt-1">
+                            {errors.sumber}
+                        </p>
                     )}
                 </FormField>
 
                 {/* Status */}
                 <FormField label="Status Awal">
-                    <select
+                    <input
+                        type="text"
                         name="lead_status"
-                        className={selectCls}
-                        value={form.lead_status}
-                        onChange={handleChange}
-                    >
-                        <option value="Baru">Baru</option>
-                        <option value="Dihubungi">Dihubungi</option>
-                        <option value="Negosiasi">Negosiasi</option>
-                    </select>
+                        value="Baru"
+                        readOnly
+                        className={inputCls}
+                    />
                 </FormField>
 
                 {/* Domisili */}
                 <FormField label="Domisili">
                     <input
                         name="domisili"
-                        className={`${inputCls} ${errors.domisili ? 'border-red-400' : ''}`}
+                        className={`${inputCls} ${errors.domisili ? "border-red-400" : ""}`}
                         placeholder="Kota / Kabupaten"
                         value={form.domisili}
                         onChange={handleChange}
                     />
                     {errors.domisili && (
-                        <p className="text-[11px] text-red-500 mt-1">{errors.domisili}</p>
+                        <p className="text-[11px] text-red-500 mt-1">
+                            {errors.domisili}
+                        </p>
                     )}
                 </FormField>
 
@@ -198,14 +213,16 @@ export default function ModalTambahKlien({ show, onClose, onSimpan, sales = [] }
                 <FormField label="Alamat Lengkap Perusahaan" full>
                     <textarea
                         name="alamat_lengkap"
-                        className={`${textareaCls} ${errors.alamat_lengkap ? 'border-red-400' : ''}`}
+                        className={`${textareaCls} ${errors.alamat_lengkap ? "border-red-400" : ""}`}
                         placeholder="Masukkan alamat lengkap kantor pusat..."
                         rows={3}
                         value={form.alamat_lengkap}
                         onChange={handleChange}
                     />
                     {errors.alamat_lengkap && (
-                        <p className="text-[11px] text-red-500 mt-1">{errors.alamat_lengkap}</p>
+                        <p className="text-[11px] text-red-500 mt-1">
+                            {errors.alamat_lengkap}
+                        </p>
                     )}
                 </FormField>
             </FormGrid>
