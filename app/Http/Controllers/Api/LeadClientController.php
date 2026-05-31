@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\LeadClient;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class LeadClientController extends Controller
 {
@@ -37,8 +38,8 @@ class LeadClientController extends Controller
         if ($request->search) {
             $query->where(function ($q) use ($request) {
                 $q->where('nama_client',   'like', '%' . $request->search . '%')
-                  ->orWhere('company_name','like', '%' . $request->search . '%')
-                  ->orWhere('email',       'like', '%' . $request->search . '%');
+                    ->orWhere('company_name', 'like', '%' . $request->search . '%')
+                    ->orWhere('email',       'like', '%' . $request->search . '%');
             });
         }
 
@@ -75,8 +76,8 @@ class LeadClientController extends Controller
         $sales = User::where('is_admin', 0)
             ->where(function ($q) use ($keyword) {
                 $q->where('first_name', 'like', '%' . $keyword . '%')
-                  ->orWhere('last_name',  'like', '%' . $keyword . '%')
-                  ->orWhere('email',      'like', '%' . $keyword . '%');
+                    ->orWhere('last_name',  'like', '%' . $keyword . '%')
+                    ->orWhere('email',      'like', '%' . $keyword . '%');
             })
             ->select('id', 'first_name', 'last_name', 'email')
             ->limit(10)
@@ -116,6 +117,19 @@ class LeadClientController extends Controller
             'alamat_lengkap'   => $request->alamat_lengkap,
             'created_at'       => now(),
         ]);
+
+        if ($prospek->lead_status === 'Baru') {
+
+            Http::withHeaders([
+                'Authorization' => env('FONTE_TOKEN')
+            ])->post('https://api.fonnte.com/send', [
+                'target'  => $prospek->phone,
+                'message' =>
+                "Halo {$prospek->nama_client},\n\n" .
+                    "Terima kasih telah menghubungi PT Disty Teknologi Indonesia.\n" .
+                    "Tim kami akan segera menghubungi Anda."
+            ]);
+        }
 
         return response()->json([
             'status'  => 'success',
@@ -211,7 +225,7 @@ class LeadClientController extends Controller
 
         return response()->stream(function () use ($prospeks) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, ['Nama Client','Perusahaan','Email','Phone','Status','Sumber','Domisili','Tanggal Dibuat']);
+            fputcsv($file, ['Nama Client', 'Perusahaan', 'Email', 'Phone', 'Status', 'Sumber', 'Domisili', 'Tanggal Dibuat']);
             foreach ($prospeks as $item) {
                 fputcsv($file, [
                     $item->nama_client,
