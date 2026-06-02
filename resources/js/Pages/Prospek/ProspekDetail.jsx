@@ -183,7 +183,6 @@ function TabKomunikasi({ prospekId }) {
         }
     }
 
-
     return (
         <div>
             <p className="text-[12px] uppercase tracking-widest text-gray-400 font-semibold mb-5">
@@ -277,6 +276,9 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
     const [modalIngat, setModalIngat] = useState(false);
     const [modalDeal, setModalDeal] = useState(false);
     const [converted, setConverted] = useState(false);
+    const [showTolakModal, setShowTolakModal] = useState(false);
+    const [alasanTolak, setAlasanTolak] = useState("");
+    const [catatanLainnya, setCatatanLainnya] = useState("");
 
     async function handleKonversi() {
         const konfirmasi = window.confirm(
@@ -344,9 +346,16 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
     }
 
     async function handleTolak() {
-        const konfirmasi = window.confirm("Yakin ingin menolak prospek ini?");
+        let catatan = alasanTolak;
 
-        if (!konfirmasi) return;
+        if (alasanTolak === "Lainnya") {
+            if (!catatanLainnya.trim()) {
+                alert("Silakan isi alasan lainnya.");
+                return;
+            }
+
+            catatan = catatanLainnya;
+        }
 
         try {
             const csrfToken = document.cookie
@@ -366,7 +375,7 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                 credentials: "same-origin",
                 body: JSON.stringify({
                     status_baru: "Belum Tertarik",
-                    catatan: "Pelanggan belum tertarik",
+                    catatan: catatan,
                 }),
             });
 
@@ -375,6 +384,8 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
             if (!res.ok) {
                 throw new Error(json.message || "Gagal mengubah status.");
             }
+
+            setShowTolakModal(false);
 
             alert("Prospek berhasil diubah menjadi Belum Tertarik.");
 
@@ -641,7 +652,7 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
 
                         {/* Tombol Tolak */}
                         <button
-                            onClick={handleTolak}
+                            onClick={() => setShowTolakModal(true)}
                             className="flex-shrink-0 flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-[14px] font-medium bg-red-600 text-white hover:bg-red-700 transition"
                         >
                             Belum Tertarik
@@ -698,7 +709,10 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                                     ["Perusahaan", prospek.company_name],
                                     ["Email", prospek.email, true],
                                     ["Telepon", prospek.phone],
-                                    ["Produk Diminati", prospek.product_interest],
+                                    [
+                                        "Produk Diminati",
+                                        prospek.product_interest,
+                                    ],
                                     [
                                         "Ditugaskan Kepada",
                                         prospek.sales?.first_name +
@@ -761,6 +775,105 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                                             {prospek.lead_status || "-"}
                                         </p>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showTolakModal && (
+                        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                            <div className="bg-white rounded-xl w-full max-w-lg p-6">
+                                <h3 className="text-lg font-semibold mb-4">
+                                    Alasan Belum Tertarik
+                                </h3>
+
+                                <div className="space-y-3">
+                                    <label className="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            value="Budget belum tersedia"
+                                            checked={
+                                                alasanTolak ===
+                                                "Budget belum tersedia"
+                                            }
+                                            onChange={(e) =>
+                                                setAlasanTolak(e.target.value)
+                                            }
+                                        />
+                                        Budget belum tersedia
+                                    </label>
+
+                                    <label className="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            value="Harga belum sesuai"
+                                            checked={
+                                                alasanTolak ===
+                                                "Harga belum sesuai"
+                                            }
+                                            onChange={(e) =>
+                                                setAlasanTolak(e.target.value)
+                                            }
+                                        />
+                                        Harga belum sesuai
+                                    </label>
+
+                                    <label className="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            value="Belum membutuhkan produk"
+                                            checked={
+                                                alasanTolak ===
+                                                "Belum membutuhkan produk"
+                                            }
+                                            onChange={(e) =>
+                                                setAlasanTolak(e.target.value)
+                                            }
+                                        />
+                                        Belum membutuhkan produk
+                                    </label>
+
+                                    <label className="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            value="Lainnya"
+                                            checked={alasanTolak === "Lainnya"}
+                                            onChange={(e) =>
+                                                setAlasanTolak(e.target.value)
+                                            }
+                                        />
+                                        Lainnya
+                                    </label>
+
+                                    {alasanTolak === "Lainnya" && (
+                                        <textarea
+                                            value={catatanLainnya}
+                                            onChange={(e) =>
+                                                setCatatanLainnya(
+                                                    e.target.value,
+                                                )
+                                            }
+                                            rows={4}
+                                            placeholder="Tuliskan alasan pelanggan..."
+                                            className="w-full border rounded-lg px-3 py-2"
+                                        />
+                                    )}
+                                </div>
+
+                                <div className="flex justify-end gap-3 mt-6">
+                                    <button
+                                        onClick={() => setShowTolakModal(false)}
+                                        className="px-4 py-2 border rounded-lg"
+                                    >
+                                        Batal
+                                    </button>
+
+                                    <button
+                                        onClick={handleTolak}
+                                        className="px-4 py-2 bg-red-600 text-white rounded-lg"
+                                    >
+                                        Simpan
+                                    </button>
                                 </div>
                             </div>
                         </div>
