@@ -28,7 +28,7 @@ class ProspekController extends Controller
             'dihubungi'  => LeadClient::where('lead_status', 'Dihubungi')->count(),
             'negosiasi'  => LeadClient::where('lead_status', 'Negosiasi')->count(),
             'deal'       => LeadClient::where('lead_status', 'Deal')->count(),
-            'ditolak'    => LeadClient::where('lead_status', 'Ditolak')->count(),
+            'belum_tertarik'    => LeadClient::where('lead_status', 'Belum Tertarik')->count(),
         ];
 
         return Inertia::render('Prospek/Index', [
