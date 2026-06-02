@@ -698,6 +698,7 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                                     ["Perusahaan", prospek.company_name],
                                     ["Email", prospek.email, true],
                                     ["Telepon", prospek.phone],
+                                    ["Produk Diminati", prospek.product_interest],
                                     [
                                         "Ditugaskan Kepada",
                                         prospek.sales?.first_name +
@@ -715,6 +716,7 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                                         }),
                                     ],
                                     ["Domisili", prospek.domisili],
+                                    ["Alamat Lengkap", prospek.alamat_lengkap],
                                 ].map(([label, val, isEmail]) => (
                                     <div
                                         key={label}

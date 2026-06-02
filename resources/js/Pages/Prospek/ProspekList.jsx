@@ -15,7 +15,7 @@ const BADGE = {
     Dihubungi: "bg-purple-100 text-purple-700",
     Negosiasi: "bg-amber-100 text-amber-700",
     Deal: "bg-green-100 text-green-700",
-    'Belum Tertarik': "bg-red-100 text-red-700",
+    "Belum Tertarik": "bg-red-100 text-red-700",
 };
 
 const AVATAR_COLORS = [
@@ -79,6 +79,36 @@ export default function ProspekList({
             console.error(error);
         }
     }
+
+    async function handleExportExcel() {
+        try {
+            const response = await fetch("/api/prospek/export/excel", {
+                method: "GET",
+                credentials: "same-origin",
+            });
+
+            if (!response.ok) {
+                throw new Error("Gagal export Excel");
+            }
+
+            const blob = await response.blob();
+
+            const url = window.URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "prospek.xlsx";
+
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
     return (
         <AppLayout>
             <div>
@@ -94,6 +124,13 @@ export default function ProspekList({
                             className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition"
                         >
                             Export CSV
+                        </button>
+
+                        <button
+                            onClick={handleExportExcel}
+                            className="px-4 py-2 rounded-lg bg-emerald-700 text-white hover:bg-emerald-800 transition"
+                        >
+                            Export Excel
                         </button>
 
                         <button

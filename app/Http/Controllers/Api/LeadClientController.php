@@ -7,6 +7,8 @@ use App\Models\LeadClient;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use App\Exports\ProspekExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class LeadClientController extends Controller
 {
@@ -243,5 +245,13 @@ class LeadClientController extends Controller
             'Content-Type'        => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"$filename\"",
         ]);
+    }
+
+    public function exportExcel()
+    {
+        return Excel::download(
+            new ProspekExport(auth()->user()),
+            'prospek.xlsx'
+        );
     }
 }

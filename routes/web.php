@@ -58,6 +58,7 @@ Route::middleware('auth')->group(function () {
         // ==============================
         Route::get('/prospek/search-sales', [LeadClientController::class, 'searchSales']);
         Route::get('/prospek/export/csv',       [LeadClientController::class, 'exportCsv']); // ← harus SEBELUM /{id}
+        Route::get('/prospek/export/excel',     [LeadClientController::class, 'exportExcel']); // ← harus SEBELUM /{id}
         Route::get('/prospek',                  [LeadClientController::class, 'index']);
         Route::post('/prospek',                 [LeadClientController::class, 'store']);
         Route::get('/prospek/{id}',             [LeadClientController::class, 'show']);
