@@ -22,7 +22,7 @@ return new class extends Migration
                 'Dihubungi',
                 'Negosiasi',
                 'Deal',
-                'Ditolak'
+                'Belum Tertarik'
             ])->default('Baru');
             $table->string('domisili', 50);
             $table->longText('alamat_lengkap');

@@ -63,7 +63,7 @@ class LeadClientController extends Controller
                 'dihubungi' => (clone $summaryQuery)->where('lead_status', 'Dihubungi')->count(),
                 'negosiasi' => (clone $summaryQuery)->where('lead_status', 'Negosiasi')->count(),
                 'deal'      => (clone $summaryQuery)->where('lead_status', 'Deal')->count(),
-                'ditolak'   => (clone $summaryQuery)->where('lead_status', 'Ditolak')->count(),
+                'belum_tertarik'   => (clone $summaryQuery)->where('lead_status', 'Belum Tertarik')->count(),
             ],
         ]);
     }
@@ -98,7 +98,7 @@ class LeadClientController extends Controller
             'nama_client'    => 'required|string|max:50',
             'phone'          => 'required|string|max:20',
             'email'          => 'required|email',
-            'lead_status'    => 'required|in:Baru,Dihubungi,Negosiasi,Deal,Ditolak',
+            'lead_status'    => 'required|in:Baru,Dihubungi,Negosiasi,Deal,Belum Tertarik',
             'sumber'         => 'required|string|max:50',
             'domisili'       => 'required|string|max:50',
             'alamat_lengkap' => 'required|string',
@@ -161,7 +161,7 @@ class LeadClientController extends Controller
         $request->validate([
             'nama_client' => 'required|string|max:50',
             'phone'       => 'required|string|max:20',
-            'lead_status' => 'required|in:Baru,Dihubungi,Negosiasi,Deal,Ditolak',
+            'lead_status' => 'required|in:Baru,Dihubungi,Negosiasi,Deal,Belum Tertarik',
             'email'       => 'required|email',
         ]);
 

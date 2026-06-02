@@ -29,7 +29,7 @@ const STATUS_BADGE = {
     Dihubungi: 'bg-purple-100 text-purple-700',
     Negosiasi: 'bg-amber-100 text-amber-700',
     Deal:      'bg-green-100 text-green-700',
-    Ditolak:   'bg-red-100 text-red-700',
+    'Belum Tertarik':   'bg-red-100 text-red-700',
 };
 
 const tahunOptions = () => {
@@ -191,7 +191,7 @@ function StatistikProspek() {
         { label: 'Dihubungi', value: breakdown.dihubungi || 0, text: 'text-purple-600' },
         { label: 'Negosiasi', value: breakdown.negosiasi || 0, text: 'text-amber-600' },
         { label: 'Deal',      value: breakdown.deal      || 0, text: 'text-green-600' },
-        { label: 'Belum Tertarik',   value: breakdown.ditolak   || 0, text: 'text-red-600' },
+        { label: 'Belum Tertarik',   value: breakdown.belum_tertarik   || 0, text: 'text-red-600' },
     ];
 
     return (
@@ -493,7 +493,7 @@ export default function Dashboard() {
         { label: 'Dihubungi', value: funnel.dihubungi || 0, percent: Math.round(((funnel.dihubungi || 0) / total) * 100), colorBar: 'bg-purple-500', colorText: 'text-purple-600' },
         { label: 'Negosiasi', value: funnel.negosiasi || 0, percent: Math.round(((funnel.negosiasi || 0) / total) * 100), colorBar: 'bg-amber-500',  colorText: 'text-amber-600'  },
         { label: 'Deal',      value: funnel.deal      || 0, percent: Math.round(((funnel.deal      || 0) / total) * 100), colorBar: 'bg-green-500',  colorText: 'text-green-600'  },
-        { label: 'Belum Tertarik',   value: funnel.ditolak   || 0, percent: Math.round(((funnel.ditolak   || 0) / total) * 100), colorBar: 'bg-red-500',    colorText: 'text-red-600'    },
+        { label: 'Belum Tertarik',   value: funnel.belum_tertarik   || 0, percent: Math.round(((funnel.belum_tertarik   || 0) / total) * 100), colorBar: 'bg-red-500',    colorText: 'text-red-600'    },
     ];
 
     return (

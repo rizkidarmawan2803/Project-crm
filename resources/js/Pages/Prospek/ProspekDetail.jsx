@@ -365,7 +365,7 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                 },
                 credentials: "same-origin",
                 body: JSON.stringify({
-                    status_baru: "Ditolak",
+                    status_baru: "Belum Tertarik",
                     catatan: "Pelanggan belum tertarik",
                 }),
             });
@@ -376,7 +376,7 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                 throw new Error(json.message || "Gagal mengubah status.");
             }
 
-            alert("Prospek berhasil ditolak.");
+            alert("Prospek berhasil diubah menjadi Belum Tertarik.");
 
             window.location.reload();
         } catch (error) {

@@ -61,8 +61,8 @@ class DashboardController extends Controller
                 'value' => LeadClient::where('lead_status', 'Deal')->count(),
             ],
             [
-                'label' => 'Ditolak',
-                'value' => LeadClient::where('lead_status', 'Ditolak')->count(),
+                'label' => 'Belum Tertarik',
+                'value' => LeadClient::where('lead_status', 'Belum Tertarik')->count(),
             ],
         ];
 

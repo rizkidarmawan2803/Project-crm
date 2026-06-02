@@ -22,7 +22,7 @@ const STATUS_STYLE = {
     Dihubungi: "bg-yellow-100 text-yellow-700",
     Negosiasi: "bg-orange-100 text-orange-700",
     Deal:      "bg-green-100 text-green-700",
-    Ditolak:   "bg-red-100 text-red-700",
+    'Belum Tertarik':   "bg-red-100 text-red-700",
 };
 
 // ─────────────────────────────────────────────

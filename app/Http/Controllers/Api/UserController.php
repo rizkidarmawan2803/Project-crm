@@ -19,9 +19,9 @@ class UserController extends Controller
                 ->where('lead_status', 'Deal')
                 ->count();
 
-            // Total leads aktif = yang belum Deal atau Ditolak
+            // Total leads aktif = yang belum Deal atau Belum Tertarik
             $totalLeads = LeadClient::where('sales_id', $user->id)
-                ->whereNotIn('lead_status', ['Deal', 'Ditolak'])
+                ->whereNotIn('lead_status', ['Deal', 'Belum Tertarik'])  // hanya yang masih proses
                 ->count();
 
             return [

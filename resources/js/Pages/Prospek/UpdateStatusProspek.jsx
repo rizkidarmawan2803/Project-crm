@@ -35,7 +35,7 @@ export default function UpdateStatusProspek({ prospek, onBack }) {
                 return [];
 
             case "Deal":
-            case "Ditolak":
+            case "Belum Tertarik":
                 return [];
 
             default:

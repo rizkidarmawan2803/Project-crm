@@ -61,6 +61,6 @@ class LeadClient extends Model
 
     public function scopeAktif($query)
     {
-        return $query->whereNotIn('lead_status', ['Deal', 'Ditolak']);
+        return $query->whereNotIn('lead_status', ['Deal', 'Belum Tertarik']);
     }
 }

@@ -36,7 +36,7 @@ class DashboardController extends Controller
             'dihubungi' => DB::table('lead_clients')->where('lead_status', 'Dihubungi')->count(),
             'negosiasi' => DB::table('lead_clients')->where('lead_status', 'Negosiasi')->count(),
             'deal'      => DB::table('lead_clients')->where('lead_status', 'Deal')->count(),
-            'ditolak'   => DB::table('lead_clients')->where('lead_status', 'Ditolak')->count(),
+            'belum_tertarik'   => DB::table('lead_clients')->where('lead_status', 'Belum Tertarik')->count(),
         ];
 
         // Aktivitas terbaru
@@ -103,7 +103,7 @@ class DashboardController extends Controller
             'dihubungi' => (clone $baseQuery)->where('lead_status', 'Dihubungi')->count(),
             'negosiasi' => (clone $baseQuery)->where('lead_status', 'Negosiasi')->count(),
             'deal'      => (clone $baseQuery)->where('lead_status', 'Deal')->count(),
-            'ditolak'   => (clone $baseQuery)->where('lead_status', 'Ditolak')->count(),
+            'belum_tertarik'   => (clone $baseQuery)->where('lead_status', 'Belum Tertarik')->count(),
         ];
 
         // Data per bulan untuk chart (dalam tahun yang dipilih)
@@ -144,7 +144,7 @@ class DashboardController extends Controller
                 DB::raw('SUM(CASE WHEN lead_clients.lead_status = "Baru" THEN 1 ELSE 0 END) as total_baru'),
                 DB::raw('SUM(CASE WHEN lead_clients.lead_status = "Dihubungi" THEN 1 ELSE 0 END) as total_dihubungi'),
                 DB::raw('SUM(CASE WHEN lead_clients.lead_status = "Negosiasi" THEN 1 ELSE 0 END) as total_negosiasi'),
-                DB::raw('SUM(CASE WHEN lead_clients.lead_status = "Ditolak" THEN 1 ELSE 0 END) as total_ditolak')
+                DB::raw('SUM(CASE WHEN lead_clients.lead_status = "Belum Tertarik" THEN 1 ELSE 0 END) as total_belum_tertarik')
             )
             ->where('users.is_admin', 0); // hanya sales
 
@@ -215,7 +215,7 @@ class DashboardController extends Controller
             ['status' => 'Dihubungi', 'total' => (clone $query)->where('lead_status', 'Dihubungi')->count()],
             ['status' => 'Negosiasi', 'total' => (clone $query)->where('lead_status', 'Negosiasi')->count()],
             ['status' => 'Deal',      'total' => (clone $query)->where('lead_status', 'Deal')->count()],
-            ['status' => 'Ditolak',   'total' => (clone $query)->where('lead_status', 'Ditolak')->count()],
+            ['status' => 'Belum Tertarik',   'total' => (clone $query)->where('lead_status', 'Belum Tertarik')->count()],
         ];
 
         // Hitung persen

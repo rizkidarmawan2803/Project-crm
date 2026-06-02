@@ -41,7 +41,7 @@ class StatusLogController extends Controller
 
         // Validasi input sesuai enum di database
         $validated = $request->validate([
-            'status_baru' => 'required|in:Baru,Dihubungi,Negosiasi,Deal,Ditolak',
+            'status_baru' => 'required|in:Baru,Dihubungi,Negosiasi,Deal,Belum Tertarik',
             'catatan'     => 'nullable|string',
         ]);
 
