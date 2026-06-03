@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import ProductAutocomplete from "./ProductAutocomplete";
 
 export default function UpdateStatusProspek({ prospek, onBack }) {
     const getInitialStatus = () => {
@@ -176,11 +177,10 @@ export default function UpdateStatusProspek({ prospek, onBack }) {
                         <label className="block text-sm font-medium text-gray-600 mb-2">
                             Produk Diminati
                         </label>
-                        <input
-                            type="text"
+                        <ProductAutocomplete
                             value={productInterest}
-                            onChange={(e) => setProductInterest(e.target.value)}
-                            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onChange={(val) => setProductInterest(val)}
+                            placeholder="Cari atau masukkan nama produk..."
                         />
                     </div>
 

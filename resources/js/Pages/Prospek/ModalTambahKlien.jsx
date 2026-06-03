@@ -8,6 +8,7 @@ import Modal, {
     BtnPrimary,
     BtnOutline,
 } from "./Modal";
+import ProductAutocomplete from "./ProductAutocomplete";
 
 export default function ModalTambahKlien({
     show,
@@ -157,12 +158,15 @@ export default function ModalTambahKlien({
 
                 {/* Produk */}
                 <FormField label="Produk yang diminati">
-                    <input
-                        name="product_interest"
-                        className={inputCls}
-                        placeholder="Masukkan produk yang diminati"
+                    <ProductAutocomplete
                         value={form.product_interest}
-                        onChange={handleChange}
+                        onChange={(val) => {
+                            setForm({ ...form, product_interest: val });
+                            if (errors.product_interest) {
+                                setErrors({ ...errors, product_interest: null });
+                            }
+                        }}
+                        placeholder="Cari atau masukkan nama produk..."
                     />
                 </FormField>
 

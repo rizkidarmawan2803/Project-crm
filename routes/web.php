@@ -6,11 +6,13 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ManajemenPenggunaController;
 use App\Http\Controllers\ProspekController;
 use App\Http\Controllers\PelangganController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Api\StatusLogController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\LeadClientController;
 use App\Http\Controllers\Api\AktivitasController;
 use App\Http\Controllers\Api\DealController;
+use App\Http\Controllers\Api\ProductController as ApiProductController;
 
 // ─── AUTH (belum login) ───────────────────────────────
 Route::middleware('guest')->group(function () {
@@ -25,6 +27,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/prospek', [ProspekController::class, 'index'])->name('prospek');
     Route::get('/pelanggan', [PelangganController::class, 'index'])->name('pelanggan');
     Route::get('/pelanggan/{id}', [PelangganController::class, 'show'])->name('pelanggan.show');
+    Route::get('/product', [ProductController::class, 'index'])->name('product');
 
 
     Route::prefix('api')->group(function () {
@@ -85,6 +88,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/deals',               [DealController::class, 'store']);
         Route::delete('/deals/{id}',        [DealController::class, 'destroy']);
         Route::put('/deals/{id}/status',    [DealController::class, 'updateStatus']);
+
+        // ==============================
+        // PRODUCTS
+        // ==============================
+        Route::get('/products',             [ApiProductController::class, 'index']);
+        Route::post('/products',            [ApiProductController::class, 'store']);
     });
 });
 
