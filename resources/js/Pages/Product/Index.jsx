@@ -12,32 +12,72 @@ import Modal, {
 
 function IconBox({ className }) {
     return (
-        <svg className={className} fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+        <svg
+            className={className}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+            viewBox="0 0 24 24"
+        >
+            <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+            />
         </svg>
     );
 }
 
 function IconSearch({ className }) {
     return (
-        <svg className={className} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        <svg
+            className={className}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+        >
+            <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
         </svg>
     );
 }
 
 function IconChevronLeft({ className }) {
     return (
-        <svg className={className} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
+        <svg
+            className={className}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            viewBox="0 0 24 24"
+        >
+            <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 19l-7-7 7-7"
+            />
         </svg>
     );
 }
 
 function IconChevronRight({ className }) {
     return (
-        <svg className={className} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/>
+        <svg
+            className={className}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            viewBox="0 0 24 24"
+        >
+            <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 5l7 7-7 7"
+            />
         </svg>
     );
 }
@@ -47,7 +87,7 @@ export default function Index() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [showModal, setShowModal] = useState(false);
-    
+
     // Form state
     const [form, setForm] = useState({ nama_product: "", deskripsi: "" });
     const [formErrors, setFormErrors] = useState({});
@@ -107,7 +147,7 @@ export default function Index() {
             setProducts([response.data.data, ...products]);
             setShowModal(false);
             setForm({ nama_product: "", deskripsi: "" });
-            
+
             // Show toast success
             setSuccessMessage("Produk berhasil ditambahkan!");
             setTimeout(() => setSuccessMessage(null), 3000);
@@ -115,10 +155,30 @@ export default function Index() {
             if (error.response?.status === 422) {
                 setFormErrors(error.response.data.errors || {});
             } else {
-                setApiError(error.response?.data?.message || "Terjadi kesalahan saat menyimpan produk.");
+                setApiError(
+                    error.response?.data?.message ||
+                        "Terjadi kesalahan saat menyimpan produk.",
+                );
             }
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (!confirm("Yakin ingin menghapus produk ini?")) {
+            return;
+        }
+
+        try {
+            await axios.delete(`/api/products/${id}`);
+
+            setProducts((prev) => prev.filter((item) => item.id !== id));
+
+            setSuccessMessage("Produk berhasil dihapus!");
+            setTimeout(() => setSuccessMessage(null), 3000);
+        } catch (error) {
+            alert(error.response?.data?.message || "Gagal menghapus produk.");
         }
     };
 
@@ -143,15 +203,19 @@ export default function Index() {
         const term = searchTerm.toLowerCase();
         return (
             product.nama_product.toLowerCase().includes(term) ||
-            (product.deskripsi && product.deskripsi.toLowerCase().includes(term))
+            (product.deskripsi &&
+                product.deskripsi.toLowerCase().includes(term))
         );
     });
 
     // Paginated items
-    const totalPages = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
+    const totalPages = Math.max(
+        1,
+        Math.ceil(filteredProducts.length / itemsPerPage),
+    );
     const paginatedProducts = filteredProducts.slice(
         (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
+        currentPage * itemsPerPage,
     );
 
     // Reset current page when search changes
@@ -169,7 +233,8 @@ export default function Index() {
                         Manajemen Produk
                     </h1>
                     <p className="text-[13px] text-gray-500 mt-0.5">
-                        Kelola daftar produk yang ditawarkan kepada calon pelanggan.
+                        Kelola daftar produk yang ditawarkan kepada calon
+                        pelanggan.
                     </p>
                 </div>
                 <button
@@ -181,8 +246,18 @@ export default function Index() {
                     }}
                     className="flex items-center justify-center gap-2 bg-blue-700 hover:bg-blue-800 text-white font-medium text-[13px] px-4 py-2.5 rounded-xl transition shadow-sm self-start sm:self-auto"
                 >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/>
+                    <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 4v16m8-8H4"
+                        />
                     </svg>
                     Tambah Produk
                 </button>
@@ -199,7 +274,9 @@ export default function Index() {
             {/* Stat Card */}
             <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center justify-between mb-5 shadow-sm">
                 <div>
-                    <p className="text-[12px] text-gray-400 mb-1">Total Jenis Produk</p>
+                    <p className="text-[12px] text-gray-400 mb-1">
+                        Total Jenis Produk
+                    </p>
                     <p className="text-[26px] font-semibold text-gray-900 leading-none">
                         {loading ? "..." : products.length}
                     </p>
@@ -211,13 +288,12 @@ export default function Index() {
 
             {/* Main Content */}
             <div className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm">
-                
                 {/* Search Bar & Toolbar */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-4 border-b border-gray-100 gap-3">
                     <span className="text-[14px] font-semibold text-gray-855">
                         Daftar Produk
                     </span>
-                    
+
                     <div className="relative w-full sm:max-w-xs">
                         <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
@@ -235,35 +311,70 @@ export default function Index() {
                     <table className="w-full text-left">
                         <thead>
                             <tr className="bg-gray-50 border-b border-gray-100">
-                                <th className="px-6 py-3 text-[12px] font-semibold text-gray-400 w-1/4">Nama Produk</th>
-                                <th className="px-6 py-3 text-[12px] font-semibold text-gray-400 w-1/2">Deskripsi</th>
-                                <th className="px-6 py-3 text-[12px] font-semibold text-gray-400 w-1/4">Tanggal Dibuat</th>
+                                <th className="px-6 py-3 text-[12px] font-semibold text-gray-400 w-1/4">
+                                    Nama Produk
+                                </th>
+                                <th className="px-6 py-3 text-[12px] font-semibold text-gray-400 w-1/2">
+                                    Deskripsi
+                                </th>
+                                <th className="px-6 py-3 text-[12px] font-semibold text-gray-400 w-1/4">
+                                    Tanggal Dibuat
+                                </th>
+
+                                <th className="px-6 py-3 text-[12px] font-semibold text-gray-400 text-center">
+                                    Aksi
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={3} className="px-6 py-10 text-center text-[13px] text-gray-400">
-                                        Memuat data produk...
+                                    <td
+                                        colSpan={4}
+                                        className="px-6 py-10 text-center text-[13px] text-gray-400"
+                                    >
+                                        Belum ada data produk...
                                     </td>
                                 </tr>
                             ) : paginatedProducts.length === 0 ? (
                                 <tr>
-                                    <td colSpan={3} className="px-6 py-10 text-center text-[13px] text-gray-400">
-                                        {searchTerm ? "Tidak ada produk yang cocok dengan pencarian." : "Belum ada data produk."}
+                                    <td
+                                        colSpan={3}
+                                        className="px-6 py-10 text-center text-[13px] text-gray-400"
+                                    >
+                                        {searchTerm
+                                            ? "Tidak ada produk yang cocok dengan pencarian."
+                                            : "Belum ada data produk."}
                                     </td>
                                 </tr>
                             ) : (
                                 paginatedProducts.map((product) => (
-                                    <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                                    <tr
+                                        key={product.id}
+                                        className="hover:bg-gray-50 transition-colors"
+                                    >
                                         <td className="px-6 py-4 text-[13.5px] text-gray-800 font-semibold">
                                             {product.nama_product}
                                         </td>
                                         <td className="px-6 py-4 text-[13px] text-gray-500 whitespace-pre-line leading-relaxed max-w-md">
-                                            {product.deskripsi || <span className="italic text-gray-300">Tidak ada deskripsi</span>}
+                                            {product.deskripsi || (
+                                                <span className="italic text-gray-300">
+                                                    Tidak ada deskripsi
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4 text-[13px] text-gray-400">
                                             {formatDate(product.created_at)}
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <button
+                                                onClick={() =>
+                                                    handleDelete(product.id)
+                                                }
+                                                className="px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition text-[12px] font-medium"
+                                            >
+                                                Hapus
+                                            </button>
                                         </td>
                                     </tr>
                                 ))
@@ -276,12 +387,24 @@ export default function Index() {
                 {filteredProducts.length > 0 && (
                     <div className="flex items-center justify-between px-6 py-3 border-t border-gray-100 bg-white">
                         <span className="text-[12px] text-gray-400">
-                            Menampilkan {Math.min(filteredProducts.length, (currentPage - 1) * itemsPerPage + 1)} - {Math.min(filteredProducts.length, currentPage * itemsPerPage)} dari {filteredProducts.length} produk
+                            Menampilkan{" "}
+                            {Math.min(
+                                filteredProducts.length,
+                                (currentPage - 1) * itemsPerPage + 1,
+                            )}{" "}
+                            -{" "}
+                            {Math.min(
+                                filteredProducts.length,
+                                currentPage * itemsPerPage,
+                            )}{" "}
+                            dari {filteredProducts.length} produk
                         </span>
 
                         <div className="flex items-center gap-1">
                             <button
-                                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                onClick={() =>
+                                    setCurrentPage((p) => Math.max(1, p - 1))
+                                }
                                 disabled={currentPage === 1}
                                 className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 hover:bg-gray-50 disabled:opacity-40 transition"
                             >
@@ -293,7 +416,11 @@ export default function Index() {
                             </span>
 
                             <button
-                                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                                onClick={() =>
+                                    setCurrentPage((p) =>
+                                        Math.min(totalPages, p + 1),
+                                    )
+                                }
                                 disabled={currentPage === totalPages}
                                 className="w-7 h-7 flex items-center justify-center rounded-md border border-gray-200 hover:bg-gray-50 disabled:opacity-40 transition"
                             >
@@ -312,8 +439,13 @@ export default function Index() {
                 width="max-w-md"
                 footer={
                     <>
-                        <BtnOutline onClick={() => setShowModal(false)}>Batal</BtnOutline>
-                        <BtnPrimary onClick={handleFormSubmit} disabled={submitting}>
+                        <BtnOutline onClick={() => setShowModal(false)}>
+                            Batal
+                        </BtnOutline>
+                        <BtnPrimary
+                            onClick={handleFormSubmit}
+                            disabled={submitting}
+                        >
                             {submitting ? "Menyimpan..." : "Simpan Produk"}
                         </BtnPrimary>
                     </>
@@ -325,7 +457,7 @@ export default function Index() {
                             {apiError}
                         </div>
                     )}
-                    
+
                     <FormGrid>
                         {/* Nama Produk */}
                         <FormField label="Nama Produk *" full>

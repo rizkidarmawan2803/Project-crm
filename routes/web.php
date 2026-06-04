@@ -94,6 +94,7 @@ Route::middleware('auth')->group(function () {
         // ==============================
         Route::get('/products',             [ApiProductController::class, 'index']);
         Route::post('/products',            [ApiProductController::class, 'store']);
+        Route::delete('/products/{id}', [ApiProductController::class, 'destroy']);
     });
 });
 

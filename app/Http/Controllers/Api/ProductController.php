@@ -65,4 +65,24 @@ class ProductController extends Controller
             ], 500);
         }
     }
+
+    public function destroy($id)
+    {
+        try {
+            $product = Product::findOrFail($id);
+
+            $product->delete();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Produk berhasil dihapus.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal menghapus produk.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
