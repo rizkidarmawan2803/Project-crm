@@ -120,17 +120,25 @@ class LeadClientController extends Controller
             'created_at'       => now(),
         ]);
 
-        if ($prospek->lead_status === 'Baru') {
+        try {
 
-            Http::withHeaders([
-                'Authorization' => env('FONTE_TOKEN')
-            ])->post('https://api.fonnte.com/send', [
-                'target'  => $prospek->phone,
-                'message' =>
-                "Halo {$prospek->nama_client},\n\n" .
-                    "Terima kasih telah menghubungi PT Disty Teknologi Indonesia.\n" .
-                    "Tim kami akan segera menghubungi Anda."
-            ]);
+            if ($prospek->lead_status === 'Baru') {
+
+                Http::timeout(15)
+                    ->withHeaders([
+                        'Authorization' => env('FONTE_TOKEN')
+                    ])
+                    ->post('https://api.fonnte.com/send', [
+                        'target'  => $prospek->phone,
+                        'message' =>
+                        "Halo {$prospek->nama_client},\n\n" .
+                            "Terima kasih telah menghubungi PT Disty Teknologi Indonesia.\n" .
+                            "Tim kami akan segera menghubungi Anda."
+                    ]);
+            }
+        } catch (\Exception $e) {
+
+            \Log::error('Fonnte Error: ' . $e->getMessage());
         }
 
         return response()->json([

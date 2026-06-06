@@ -42,6 +42,8 @@ export default function ProspekList({
     pagination = null,
     activeFilter = "Semua",
     loading = false,
+    search = "",
+    onSearchChange = () => {},
     onFilterChange = () => {},
     onPageChange = () => {},
     onTambahKlien = () => {},
@@ -153,6 +155,16 @@ export default function ProspekList({
                             Tambah Klien
                         </button>
                     </div>
+                </div>
+
+                <div className="mb-4">
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={(e) => onSearchChange(e.target.value)}
+                        placeholder="Cari nama client, perusahaan, atau email..."
+                        className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
                 </div>
 
                 {/* Tabs Filter */}

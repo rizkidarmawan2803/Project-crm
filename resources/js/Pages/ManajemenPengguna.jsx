@@ -129,12 +129,12 @@ function TambahKlienModal({
 
                             <div>
                                 <label className="mb-1 block text-[13px] font-medium text-slate-600">
-                                    Kata Sandi
+                                    Kata Sandi (8 karakter)
                                 </label>
 
                                 <input
                                     type="password"
-                                    placeholder="Buat kata sandi"
+                                    placeholder="Buat kata sandi 8 karakter"
                                     value={form.password}
                                     onChange={(e) =>
                                         setForm({

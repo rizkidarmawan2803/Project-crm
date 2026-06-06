@@ -27,17 +27,22 @@ export default function Index({ sales = [] }) {
     });
     const [pagination, setPagination] = useState(null);
     const [activeFilter, setActiveFilter] = useState("Semua");
+    const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(false);
     //
     useEffect(() => {
         fetchProspeks();
-    }, [activeFilter]);
+    }, [activeFilter, search]);
 
     const fetchProspeks = async (page = 1) => {
         setLoading(true);
         try {
             const response = await axios.get("/api/prospek", {
-                params: { status: activeFilter, page: page },
+                params: {
+                    status: activeFilter,
+                    page: page,
+                    search: search,
+                },
             });
             setProspeks(response.data.prospeks.data || []);
             setSummary(response.data.summary || {});
@@ -137,6 +142,8 @@ export default function Index({ sales = [] }) {
                     pagination={pagination}
                     activeFilter={activeFilter}
                     loading={loading}
+                    search={search}
+                    onSearchChange={setSearch}
                     onFilterChange={setActiveFilter}
                     onPageChange={fetchProspeks}
                     onTambahKlien={() => setShowTambahKlien(true)}
