@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('password', 255);
             $table->tinyInteger('is_admin')->default(0)->comment('1: Admin, 0: Sales');
             $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->rememberToken();
             $table->timestamps();
         });
     }

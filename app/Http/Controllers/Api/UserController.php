@@ -51,8 +51,15 @@ class UserController extends Controller
             'first_name' => 'required|string|max:50',
             'last_name'  => 'nullable|string|max:50',
             'email'      => 'required|email|unique:users,email',
-            'password'   => 'required|min:6',
+            'password'   => 'required|min:8',
             'is_admin'   => 'required|boolean',
+        ],[
+            'first_name.required' => 'Nama depan wajib diisi.',
+            'email.required'      => 'Email wajib diisi.',
+            'email.email'         => 'Format email tidak valid.',
+            'email.unique'        => 'Email ini sudah terdaftar/digunakan. Silakan gunakan email lain.',
+            'password.required'   => 'Kata sandi wajib diisi.',
+            'password.min'        => 'Kata sandi minimal harus 8 karakter.',
         ]);
 
         $user = User::create([

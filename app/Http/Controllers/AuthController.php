@@ -36,9 +36,14 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (!Auth::attempt($request->only('email', 'password'))) {
+        // Mengambil kredensial dan nilai boolean dari checkbox 'remember'
+        $credentials = $request->only('email', 'password');
+        $remember = $request->boolean('remember');
+
+        // Menyertakan $remember ke dalam Auth::attempt
+        if (!Auth::attempt($credentials, $remember)) {
             return back()->withErrors([
-                'email' => 'Email atau password salah.',
+                'email' => 'Email atau password yang Anda masukkan salah.',
             ]);
         }
 
@@ -47,20 +52,19 @@ class AuthController extends Controller
         if ($user->status === 'inactive') {
             Auth::logout();
             return back()->withErrors([
-                'email' => 'Akun anda tidak aktif.',
+                'email' => 'Akun Anda tidak aktif. Silakan hubungi Admin.',
             ]);
         }
 
         $request->session()->regenerate();
 
-        // ← Redirect berdasarkan role
+        // Redirect berdasarkan role
         if ($user->is_admin) {
             return redirect()->route('dashboard');
         } else {
             return redirect()->route('prospek');
         }
     }
-
 
     /**
      * Proses logout

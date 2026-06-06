@@ -1,4 +1,4 @@
-import React, { useState } from "react"; // <-- Tambahkan useState di sini
+import React, { useState } from "react";
 import { Head, useForm } from "@inertiajs/react";
 
 export default function Login() {
@@ -13,8 +13,7 @@ export default function Login() {
 
     const submit = (e) => {
         e.preventDefault();
-        post('/login');
-        console.log("Data Login:", data);
+        post("/login");
     };
 
     return (
@@ -93,16 +92,17 @@ export default function Login() {
                                     onChange={(e) =>
                                         setData("email", e.target.value)
                                     }
-                                    className="block w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-[10px] focus:ring-4 focus:ring-blue-100 focus:border-[#004CCA] focus:bg-white transition-all text-slate-700"
+                                    className={`block w-full pl-12 pr-4 py-3.5 bg-slate-50 border ${errors.email || errors.password ? "border-red-500 focus:ring-red-100 focus:border-red-500" : "border-slate-200 focus:ring-blue-100 focus:border-[#004CCA]"} rounded-[10px] focus:ring-4 focus:bg-white transition-all text-slate-700`}
                                     placeholder="nama@email.com"
+                                    required
                                 />
                             </div>
+                            {/* Blok teks error email di sini sudah dihapus agar tidak muncul dua kali */}
                         </div>
 
                         {/* Input Password */}
                         <div>
-                            {/* "Lupa Kata Sandi" dihapus dari sini agar bisa disejajarkan di bawah */}
-                            <label className="block text-xs font-bold text-slate-700 mb-2 ml-1  tracking-wider">
+                            <label className="block text-xs font-bold text-slate-700 mb-2 ml-1 tracking-wider">
                                 Kata Sandi
                             </label>
 
@@ -123,15 +123,15 @@ export default function Login() {
                                     </svg>
                                 </div>
 
-                                {/* Perubahan pada `type` */}
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     value={data.password}
                                     onChange={(e) =>
                                         setData("password", e.target.value)
                                     }
-                                    className="block w-full pl-12 pr-12 py-3.5 bg-slate-50 border border-slate-200 rounded-[10px] focus:ring-4 focus:ring-blue-100 focus:border-[#004CCA] focus:bg-white transition-all text-slate-700"
+                                    className={`block w-full pl-12 pr-12 py-3.5 bg-slate-50 border ${errors.password || errors.email ? "border-red-500 focus:ring-red-100 focus:border-red-500" : "border-slate-200 focus:ring-blue-100 focus:border-[#004CCA]"} rounded-[10px] focus:ring-4 focus:bg-white transition-all text-slate-700`}
                                     placeholder="••••••••"
+                                    required
                                 />
 
                                 {/* Tombol Toggle Mata */}
@@ -142,7 +142,6 @@ export default function Login() {
                                     }
                                 >
                                     {showPassword ? (
-                                        // Ikon Mata Terbuka
                                         <svg
                                             className="w-5 h-5"
                                             fill="none"
@@ -163,7 +162,6 @@ export default function Login() {
                                             />
                                         </svg>
                                     ) : (
-                                        // Ikon Mata Tertutup (Dicoret)
                                         <svg
                                             className="w-5 h-5"
                                             fill="none"
@@ -180,10 +178,16 @@ export default function Login() {
                                     )}
                                 </div>
                             </div>
+
+                            {/* Tempat Baru Pesan Error Gagal Login / Password Salah */}
+                            {(errors.password || errors.email) && (
+                                <p className="mt-1.5 ml-1 text-sm text-red-600 font-medium">
+                                    {errors.password || errors.email}
+                                </p>
+                            )}
                         </div>
 
                         {/* Ingat Saya & Lupa Password Sejajar */}
-                        {/* flex justify-between akan mendorongnya ke ujung kiri dan kanan */}
                         <div className="flex items-center justify-between ml-1 pt-1">
                             <div className="flex items-center">
                                 <input
@@ -204,7 +208,7 @@ export default function Login() {
                             </div>
 
                             <a
-                                href="#"
+                                href="mailto:admin@crm.com?subject=Permintaan Reset Password CRM"
                                 className="text-sm font-bold text-[#004CCA] hover:underline"
                             >
                                 Lupa Password?
@@ -215,7 +219,7 @@ export default function Login() {
                         <button
                             type="submit"
                             disabled={processing}
-                            className="w-full py-4 bg-[#004CCA] hover:bg-[#003da3] text-white font-extrabold text-lg rounded-[10px] shadow-lg shadow-[#004CCA]/20 transition-all active:scale-[0.98] mt-2"
+                            className="w-full py-4 bg-[#004CCA] hover:bg-[#003da3] text-white font-extrabold text-lg rounded-[10px] shadow-lg shadow-[#004CCA]/20 transition-all active:scale-[0.98] mt-2 disabled:opacity-70"
                         >
                             {processing ? "Memproses..." : "Masuk"}
                         </button>
@@ -224,7 +228,7 @@ export default function Login() {
                     <p className="mt-8 text-center text-slate-500 text-sm">
                         Belum punya akun?{" "}
                         <a
-                            href="#"
+                            href="mailto:admin@crm.com"
                             className="font-bold text-[#004CCA] hover:underline"
                         >
                             Hubungi Admin
