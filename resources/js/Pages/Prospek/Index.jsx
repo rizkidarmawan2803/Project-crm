@@ -110,7 +110,7 @@ export default function Index({ sales = [] }) {
             // 3. Hilangkan Toast setelah 3 detik
             setTimeout(() => {
                 setSuccessMessage(null);
-            }, 3000);
+            }, 2000);
 
             // 4. Refresh tabel data
             fetchProspeks();
@@ -146,7 +146,7 @@ export default function Index({ sales = [] }) {
             setSuccessMessage(`Klien ${namaKlien} berhasil di tambah`);
             setTimeout(() => {
                 setSuccessMessage(null);
-            }, 2000);
+            }, 1000);
 
             fetchProspeks();
         } catch (error) {

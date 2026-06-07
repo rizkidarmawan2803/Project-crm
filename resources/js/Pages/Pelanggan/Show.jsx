@@ -26,23 +26,29 @@ const STATUS_STYLE = {
 };
 
 // ─────────────────────────────────────────────
-// TAB RIWAYAT TRANSAKSI
+// TAB RIWAYAT TRANSAKSI (DOKUMEN DEAL)
 // ─────────────────────────────────────────────
 function TabKomunikasi({ currentLeadClientId }) {
-    const [deals, setDeals]               = useState([]);
-    const [loading, setLoading]           = useState(true);
-    const [showForm, setShowForm]         = useState(false);
-    const [formData, setFormData]         = useState({ payment_status: 'unpaid' });
+    const [deals, setDeals] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showForm, setShowForm] = useState(false);
+    const [formData, setFormData] = useState({ payment_status: "unpaid" });
     const [selectedFile, setSelectedFile] = useState(null);
     const [submitLoading, setSubmitLoading] = useState(false);
-    const [errorMsg, setErrorMsg]         = useState(null);
+    const [errorMsg, setErrorMsg] = useState(null);
 
-    useEffect(() => { fetchDeals(); }, [currentLeadClientId]);
+    // STATE UNTUK UI TAMBAHAN
+    const [successMessage, setSuccessMessage] = useState(null);
+    const [dealToDelete, setDealToDelete] = useState(null);
+
+    useEffect(() => {
+        fetchDeals();
+    }, [currentLeadClientId]);
 
     const fetchDeals = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('/api/deals', {
+            const response = await axios.get("/api/deals", {
                 params: { lead_client_id: currentLeadClientId },
                 withCredentials: true,
             });
@@ -60,19 +66,12 @@ function TabKomunikasi({ currentLeadClientId }) {
 
     const handleFileChange = (e) => {
         const file = e.target.files[0] || null;
-        console.log('[DEBUG] File dipilih:', file);
         setSelectedFile(file);
     };
 
     const handleSubmitDeal = async (e) => {
         e.preventDefault();
         setErrorMsg(null);
-
-        // ── DEBUG ──────────────────────────────────────
-        console.log('[DEBUG] currentLeadClientId:', currentLeadClientId);
-        console.log('[DEBUG] formData:', formData);
-        console.log('[DEBUG] selectedFile:', selectedFile);
-        // ───────────────────────────────────────────────
 
         if (!currentLeadClientId) {
             setErrorMsg("ID pelanggan tidak ditemukan.");
@@ -84,116 +83,151 @@ function TabKomunikasi({ currentLeadClientId }) {
             return;
         }
 
+        // Validasi Ukuran File (Max 2MB)
+        const maxSize = 2 * 1024 * 1024;
+        if (selectedFile.size > maxSize) {
+            setErrorMsg("Ukuran file terlalu besar! Maksimal 2 MB.");
+            return;
+        }
+
         setSubmitLoading(true);
 
         const data = new FormData();
-        data.append('lead_client_id', currentLeadClientId);
-        data.append('payment_status', formData.payment_status);
-        data.append('deal_file', selectedFile, selectedFile.name); // ← name eksplisit
-
-        // DEBUG: lihat isi FormData
-        for (let [key, val] of data.entries()) {
-            console.log('[DEBUG] FormData -', key, ':', val);
-        }
+        data.append("lead_client_id", currentLeadClientId);
+        data.append("payment_status", formData.payment_status);
+        data.append("deal_file", selectedFile, selectedFile.name);
 
         try {
-            const response = await axios.post('/api/deals', data, {
-                headers: { 'Content-Type': 'multipart/form-data' },
+            const response = await axios.post("/api/deals", data, {
+                headers: { "Content-Type": "multipart/form-data" },
                 withCredentials: true,
             });
 
             if (response.status === 201 || response.data.success) {
                 setShowForm(false);
-                setFormData({ payment_status: 'unpaid' });
+                setFormData({ payment_status: "unpaid" });
                 setSelectedFile(null);
+                
+                // Munculkan Toast Sukses Upload
+                setSuccessMessage("Dokumen berhasil diunggah!");
+                setTimeout(() => setSuccessMessage(null), 3000);
+                
                 fetchDeals();
             }
         } catch (error) {
-            console.error('[DEBUG] Error response:', error.response?.data);
-            const msg = error.response?.data?.message
-                || error.response?.data?.errors
-                || error.message
-                || "Terjadi kesalahan pada server.";
-            setErrorMsg(typeof msg === 'object' ? JSON.stringify(msg) : msg);
+            const msg =
+                error.response?.data?.message ||
+                error.response?.data?.errors ||
+                error.message ||
+                "Terjadi kesalahan pada server.";
+            setErrorMsg(typeof msg === "object" ? JSON.stringify(msg) : msg);
         } finally {
             setSubmitLoading(false);
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!confirm('Yakin ingin menghapus deal ini?')) return;
+    // FUNGSI EKSEKUSI HAPUS
+    const executeDelete = async () => {
+        if (!dealToDelete) return;
         try {
-            await axios.delete(`/api/deals/${id}`, { withCredentials: true });
+            await axios.delete(`/api/deals/${dealToDelete}`, {
+                withCredentials: true,
+            });
+            setDealToDelete(null); // Tutup Modal
+            
+            // Munculkan Toast Sukses Hapus
+            setSuccessMessage("Dokumen deal berhasil dihapus!");
+            setTimeout(() => setSuccessMessage(null), 3000);
+            
             fetchDeals();
         } catch (error) {
-            alert('Gagal menghapus deal.');
+            alert("Gagal menghapus deal.");
+            setDealToDelete(null);
         }
     };
 
     const handleUpdateStatus = async (id, status) => {
         try {
-            await axios.put(`/api/deals/${id}/status`, { payment_status: status }, { withCredentials: true });
+            await axios.put(
+                `/api/deals/${id}/status`,
+                { payment_status: status },
+                { withCredentials: true }
+            );
             fetchDeals();
+            
+            // Opsional: Toast saat status bayar diubah
+            setSuccessMessage("Status pembayaran diperbarui!");
+            setTimeout(() => setSuccessMessage(null), 3000);
         } catch (error) {
-            alert('Gagal update status.');
+            alert("Gagal update status.");
         }
     };
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'paid':    return 'bg-green-100 text-green-700';
-            case 'partial': return 'bg-blue-100 text-blue-700';
-            default:        return 'bg-gray-100 text-gray-700';
-        }
-    };
-
-    const getStatusLabel = (status) => {
-        switch (status) {
-            case 'paid':    return 'Lunas';
-            case 'partial': return 'Bayar Sebagian';
-            default:        return 'Belum Bayar';
+            case "paid":
+                return "bg-green-100 text-green-700";
+            case "partial":
+                return "bg-blue-100 text-blue-700";
+            default:
+                return "bg-gray-100 text-gray-700";
         }
     };
 
     return (
-        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 max-w-4xl mx-auto">
-
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 max-w-4xl mx-auto relative">
             {/* HEADER */}
             <div className="flex items-center justify-between mb-5">
                 <div>
-                    <h2 className="text-[15px] font-semibold text-gray-800">Peluang Aktif & Arsip Deal</h2>
-                    <p className="text-[12px] text-gray-400 mt-1">Kelola dokumen deal untuk pelanggan ini</p>
+                    <h2 className="text-[15px] font-semibold text-gray-800">
+                        Peluang Aktif & Arsip Deal
+                    </h2>
+                    <p className="text-[12px] text-gray-400 mt-1">
+                        Kelola dokumen deal untuk pelanggan ini
+                    </p>
                 </div>
                 <button
-                    onClick={() => { setShowForm(!showForm); setErrorMsg(null); }}
+                    onClick={() => {
+                        setShowForm(!showForm);
+                        setErrorMsg(null);
+                    }}
                     className="bg-blue-600 hover:bg-blue-700 transition text-white text-[12px] font-medium px-4 py-2 rounded-lg flex items-center gap-2"
                 >
-                    <span className="text-sm">{showForm ? '✕' : '＋'}</span>
-                    {showForm ? 'Batal' : 'Upload Berkas Deal'}
+                    <span className="text-sm">{showForm ? "✕" : "＋"}</span>
+                    {showForm ? "Batal" : "Upload Berkas Deal"}
                 </button>
             </div>
 
             {/* FORM TAMBAH DEAL */}
             {showForm && (
-                <form onSubmit={handleSubmitDeal} className="bg-white border border-gray-200 rounded-xl p-5 mb-5 space-y-4 shadow-sm">
-                    <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">Form Registrasi Dokumen Deal</h3>
+                <form
+                    onSubmit={handleSubmitDeal}
+                    className="bg-white border border-gray-200 rounded-xl p-5 mb-5 space-y-4 shadow-sm"
+                >
+                    <h3 className="text-sm font-semibold text-gray-700 border-b pb-2">
+                        Form Registrasi Dokumen Deal
+                    </h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-[12px] text-gray-500 mb-1">Status Pembayaran Kontrak</label>
+                            <label className="block text-[12px] text-gray-500 mb-1">
+                                Status Pembayaran Kontrak
+                            </label>
                             <select
                                 name="payment_status"
                                 value={formData.payment_status}
                                 onChange={handleInputChange}
-                                className="w-full border border-gray-300 rounded-lg p-2 text-sm"
+                                className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
                             >
-                                <option value="unpaid">Belum Bayar </option>
-                                <option value="partial">Bayar Sebagian </option>
-                                <option value="paid">Lunas </option>
+                                <option value="unpaid">Belum Bayar</option>
+                                <option value="partial">Bayar Sebagian</option>
+                                <option value="paid">Lunas</option>
                             </select>
                         </div>
                         <div>
-                            <label className="block text-[12px] text-gray-500 mb-1">File Dokumen Deal (PDF/Docx)</label>
+                            <label className="block text-[12px] text-gray-500 mb-1">
+                                File Dokumen Deal (PDF/Docx/Zip)
+                            </label>
                             <input
                                 type="file"
                                 accept=".pdf,.doc,.docx,.zip"
@@ -203,7 +237,6 @@ function TabKomunikasi({ currentLeadClientId }) {
                         </div>
                     </div>
 
-                    {/* Error message */}
                     {errorMsg && (
                         <div className="px-4 py-3 rounded-lg bg-red-50 border border-red-100 text-[13px] text-red-600">
                             ⚠️ {errorMsg}
@@ -213,9 +246,11 @@ function TabKomunikasi({ currentLeadClientId }) {
                     <button
                         type="submit"
                         disabled={submitLoading}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white font-medium text-sm py-2 rounded-lg transition disabled:bg-gray-400"
+                        className="w-full bg-green-600 hover:bg-green-700 text-white font-medium text-sm py-2.5 rounded-lg transition disabled:bg-gray-400"
                     >
-                        {submitLoading ? 'Sedang Mengunggah Dokumen...' : 'Simpan Deal'}
+                        {submitLoading
+                            ? "Sedang Mengunggah Dokumen..."
+                            : "Simpan Deal"}
                     </button>
                 </form>
             )}
@@ -223,29 +258,41 @@ function TabKomunikasi({ currentLeadClientId }) {
             {/* LIST DATA DEAL */}
             <div className="space-y-3">
                 {loading ? (
-                    <p className="text-center text-sm text-gray-400 py-5">Memuat data...</p>
+                    <p className="text-center text-sm text-gray-400 py-5">
+                        Memuat data...
+                    </p>
                 ) : deals.length === 0 ? (
                     <p className="text-center text-sm text-gray-400 py-5">
                         Belum ada dokumen deal dilampirkan untuk client ini.
                     </p>
                 ) : (
                     deals.map((deal) => (
-                        <div key={deal.id} className="bg-white border border-gray-200 rounded-xl px-5 py-4 flex items-center justify-between hover:border-blue-200 hover:shadow-sm transition">
+                        <div
+                            key={deal.id}
+                            className="bg-white border border-gray-200 rounded-xl px-5 py-4 flex items-center justify-between hover:border-blue-200 hover:shadow-sm transition"
+                        >
                             <div>
                                 <h3 className="text-[14px] font-medium text-gray-800 mb-1">
                                     Dokumen Kontrak Transaksi
                                 </h3>
                                 {deal.deal_file_url ? (
-                                    <a href={deal.deal_file_url} target="_blank" rel="noreferrer"
-                                        className="text-[12px] text-blue-600 hover:underline flex items-center gap-1">
+                                    <a
+                                        href={deal.deal_file_url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-[12px] text-blue-600 hover:underline flex items-center gap-1"
+                                    >
                                         📄 Lihat Lampiran Dokumen Kontrak
                                     </a>
                                 ) : (
-                                    <span className="text-[12px] text-gray-400">Tidak ada file</span>
+                                    <span className="text-[12px] text-gray-400">
+                                        Tidak ada file
+                                    </span>
                                 )}
                                 {deal.user && (
                                     <p className="text-[11px] text-gray-400 mt-1">
-                                        Diupload oleh: {deal.user.first_name} {deal.user.last_name || ''}
+                                        Diupload oleh: {deal.user.first_name}{" "}
+                                        {deal.user.last_name || ""}
                                     </p>
                                 )}
                             </div>
@@ -253,8 +300,15 @@ function TabKomunikasi({ currentLeadClientId }) {
                             <div className="flex flex-col items-end gap-2">
                                 <select
                                     value={deal.payment_status}
-                                    onChange={(e) => handleUpdateStatus(deal.id, e.target.value)}
-                                    className={`px-3 py-1 rounded-full text-[11px] font-semibold uppercase border-0 outline-none cursor-pointer ${getStatusColor(deal.payment_status)}`}
+                                    onChange={(e) =>
+                                        handleUpdateStatus(
+                                            deal.id,
+                                            e.target.value
+                                        )
+                                    }
+                                    className={`px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase border-0 outline-none cursor-pointer ${getStatusColor(
+                                        deal.payment_status
+                                    )}`}
                                 >
                                     <option value="unpaid">Belum Bayar</option>
                                     <option value="partial">Bayar Sebagian</option>
@@ -263,20 +317,82 @@ function TabKomunikasi({ currentLeadClientId }) {
 
                                 <div className="flex items-center gap-1 text-[11px] text-gray-400">
                                     <span>📅</span>
-                                    <span>{new Date(deal.created_at).toLocaleDateString('id-ID', {
-                                        day: 'numeric', month: 'short', year: 'numeric'
-                                    })}</span>
+                                    <span>
+                                        {new Date(deal.created_at).toLocaleDateString(
+                                            "id-ID",
+                                            {
+                                                day: "numeric",
+                                                month: "short",
+                                                year: "numeric",
+                                            }
+                                        )}
+                                    </span>
                                 </div>
 
-                                <button onClick={() => handleDelete(deal.id)}
-                                    className="text-[11px] text-red-500 hover:text-red-700 hover:underline">
-                                    Hapus
+                                {/* Memicu Modal Hapus, Bukan Alert Window */}
+                                <button
+                                    onClick={() => setDealToDelete(deal.id)}
+                                    className="text-[12px] font-medium text-red-500 hover:text-red-700 hover:underline mt-1"
+                                >
+                                    Hapus Berkas
                                 </button>
                             </div>
                         </div>
                     ))
                 )}
             </div>
+
+            {/* MODAL KONFIRMASI HAPUS DEAL CUSTOM */}
+            {dealToDelete && (
+                <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 px-4">
+                    <div className="bg-white rounded-2xl p-6 w-full max-w-sm text-center shadow-xl animate-in fade-in zoom-in-95">
+                        <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                            <svg
+                                className="w-7 h-7 text-red-600"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={1.8}
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
+                            </svg>
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-800 mb-2">
+                            Hapus Dokumen Deal?
+                        </h3>
+                        <p className="text-[13px] text-gray-500 mb-6">
+                            Apakah Anda yakin ingin menghapus dokumen transaksi
+                            ini? Tindakan ini tidak dapat dibatalkan.
+                        </p>
+                        <div className="flex gap-3 justify-center">
+                            <button
+                                onClick={() => setDealToDelete(null)}
+                                className="px-5 py-2.5 rounded-xl text-gray-600 bg-gray-100 hover:bg-gray-200 font-medium text-sm transition"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={executeDelete}
+                                className="px-5 py-2.5 rounded-xl text-white bg-red-600 hover:bg-red-700 font-medium text-sm transition shadow-sm"
+                            >
+                                Ya, Hapus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* TOAST ANIMASI BOUNCE */}
+            {successMessage && (
+                <div className="fixed bottom-5 right-5 z-[1000] bg-green-600 text-white text-[13px] px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-bounce">
+                    <span className="font-bold text-base">✓</span>
+                    <span className="font-medium">{successMessage}</span>
+                </div>
+            )}
         </div>
     );
 }

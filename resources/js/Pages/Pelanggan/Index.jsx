@@ -326,11 +326,9 @@ export default function Pelanggan({
             });
     }, []);
 
-    // Total halaman
-    const totalPages = Math.max(
-        1,
-        Math.ceil(totalPelanggan / perPage)
-    );
+    const totalPages = Math.max(1, Math.ceil(totalPelanggan / perPage));
+
+    const paginatedPelanggan = pelanggan.slice((page - 1) * perPage, page * perPage);
 
     return (
         <AppLayout>
@@ -401,7 +399,7 @@ export default function Pelanggan({
                                         Memuat data pelanggan...
                                     </td>
                                 </tr>
-                            ) : pelanggan.length === 0 ? (
+                            ) : paginatedPelanggan.length === 0 ? (
                                 <tr>
                                     <td
                                         colSpan={5}
@@ -411,7 +409,7 @@ export default function Pelanggan({
                                     </td>
                                 </tr>
                             ) : (
-                                pelanggan.map((row, i) => (
+                                paginatedPelanggan.map((row, i) => (
                                     <tr
                                         key={row.id}
                                         onClick={() => router.visit(`/pelanggan/${row.id}`)}
