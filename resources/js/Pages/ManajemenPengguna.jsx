@@ -14,7 +14,7 @@ function TambahKlienModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
             <div className="w-full max-w-3xl overflow-hidden rounded-[18px] bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-200">
                 {/* HEADER */}
                 <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">

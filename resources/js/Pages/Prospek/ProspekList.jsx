@@ -309,6 +309,7 @@ export default function ProspekList({
                                                             onViewDetail(p)
                                                         }
                                                         className="w-7 h-7 rounded-md border border-gray-200 bg-white flex items-center justify-center text-blue-600 hover:bg-gray-50 transition"
+                                                        title="Detail Prospek"
                                                     >
                                                         <svg
                                                             className="w-3.5 h-3.5"
@@ -358,9 +359,10 @@ export default function ProspekList({
                                                     {/* Delete */}
                                                     <button
                                                         onClick={() =>
-                                                            onDelete(p.id)
+                                                            onDelete(p)
                                                         }
                                                         className="w-7 h-7 rounded-md border border-gray-200 bg-white flex items-center justify-center text-red-600 hover:bg-gray-50 transition"
+                                                        title="Hapus Prospek"
                                                     >
                                                         <svg
                                                             className="w-3.5 h-3.5"

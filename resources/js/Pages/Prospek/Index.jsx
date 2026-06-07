@@ -7,11 +7,16 @@ import ModalTambahKlien from "./ModalTambahKlien";
 import UpdateStatusProspek from "./UpdateStatusProspek";
 import Toast from "./Toast";
 
+// KUNCI PERBAIKAN: Impor AppLayout agar dapat mengunci Sidebar & Topbar di semua kondisi layar
+import AppLayout from "../../Layouts/AppLayout";
+
+// Import komponen Modal custom
+import Modal, { BtnOutline } from "./Modal";
+
 export default function Index({ sales = [] }) {
     const { auth } = usePage().props;
 
     const [isEditMode, setIsEditMode] = useState(false);
-
     const [selectedProspek, setSelectedProspek] = useState(null);
     const [updateProspek, setUpdateProspek] = useState(null);
     const [showTambahKlien, setShowTambahKlien] = useState(false);
@@ -29,9 +34,16 @@ export default function Index({ sales = [] }) {
     const [activeFilter, setActiveFilter] = useState("Semua");
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(false);
-    //
+    const [prospekToDelete, setProspekToDelete] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
+
+    // Jeda Debounce (Jeda 500ms) untuk pencarian
     useEffect(() => {
-        fetchProspeks();
+        const delayDebounceFn = setTimeout(() => {
+            fetchProspeks(1);
+        }, 500);
+
+        return () => clearTimeout(delayDebounceFn);
     }, [activeFilter, search]);
 
     const fetchProspeks = async (page = 1) => {
@@ -63,7 +75,7 @@ export default function Index({ sales = [] }) {
         try {
             const response = await axios.get(`/api/prospek/${prospek.id}`);
             setSelectedProspek(response.data.data);
-            setIsEditMode(false); // hanya lihat detail
+            setIsEditMode(false);
         } catch (error) {
             showToast("Gagal memuat detail prospek!", "error");
         }
@@ -74,23 +86,47 @@ export default function Index({ sales = [] }) {
         setIsEditMode(false);
     };
 
-    const handleDelete = async (id) => {
-        if (!confirm("Yakin ingin menghapus prospek ini?")) return;
-        try {
-            await axios.delete(`/api/prospek/${id}`);
-            showToast("Prospek berhasil dihapus!");
-            fetchProspeks();
-        } catch (error) {
-            showToast("Gagal menghapus prospek!", "error");
-        }
+    const handleDeleteClick = (prospek) => {
+        setProspekToDelete(prospek);
     };
 
-    // Tambahkan fungsi ini di dalam komponen Index(), setelah handleDelete
+    const executeDelete = async () => {
+        if (!prospekToDelete) return;
+
+        // Ambil data dengan aman (berjaga-jaga jika state berupa object atau cuma angka ID)
+        const idToDelete = prospekToDelete.id || prospekToDelete;
+        const namaKlien = prospekToDelete.nama_client || "Klien";
+
+        try {
+            // Tembak API hapus ke database
+            await axios.delete(`/api/prospek/${idToDelete}`);
+
+            // 1. Tutup modal konfirmasi
+            setProspekToDelete(null);
+
+            // 2. Munculkan Toast animasi Bounce
+            setSuccessMessage(`${namaKlien} berhasil dihapus`);
+
+            // 3. Hilangkan Toast setelah 3 detik
+            setTimeout(() => {
+                setSuccessMessage(null);
+            }, 3000);
+
+            // 4. Refresh tabel data
+            fetchProspeks();
+        } catch (error) {
+            console.error("Error menghapus data:", error);
+            alert(
+                "Gagal menghapus prospek. Silakan periksa console untuk detailnya.",
+            );
+            setProspekToDelete(null);
+        }
+    };
 
     const handleUpdate = async (prospek) => {
         try {
             const response = await axios.get(`/api/prospek/${prospek.id}`);
-            setUpdateProspek(response.data.data); // buka halaman update status
+            setUpdateProspek(response.data.data);
         } catch (error) {
             console.error(error);
             showToast("Gagal memuat data prospek!", "error");
@@ -106,7 +142,12 @@ export default function Index({ sales = [] }) {
         try {
             await axios.post("/api/prospek", data);
             setShowTambahKlien(false);
-            showToast("Prospek berhasil ditambahkan!");
+            const namaKlien = data.nama_client || data.nama;
+            setSuccessMessage(`Klien ${namaKlien} berhasil di tambah`);
+            setTimeout(() => {
+                setSuccessMessage(null);
+            }, 2000);
+
             fetchProspeks();
         } catch (error) {
             console.error("Response error:", error.response?.data);
@@ -123,18 +164,22 @@ export default function Index({ sales = [] }) {
     return (
         <>
             {updateProspek ? (
-                <UpdateStatusProspek
-                    prospek={updateProspek}
-                    onBack={handleBackFromUpdate}
-                />
-            ) : selectedProspek ? (
-                <div className="max-w-5xl mx-auto px-2">
-                    <ProspekDetail
-                        prospek={selectedProspek}
-                        onBack={handleBack}
-                        onRefresh={fetchProspeks}
+                <AppLayout>
+                    <UpdateStatusProspek
+                        prospek={updateProspek}
+                        onBack={handleBackFromUpdate}
                     />
-                </div>
+                </AppLayout>
+            ) : selectedProspek ? (
+                <AppLayout>
+                    <div className="max-w-5xl mx-auto px-2">
+                        <ProspekDetail
+                            prospek={selectedProspek}
+                            onBack={handleBack}
+                            onRefresh={fetchProspeks}
+                        />
+                    </div>
+                </AppLayout>
             ) : (
                 <ProspekList
                     prospeks={prospeks}
@@ -148,7 +193,7 @@ export default function Index({ sales = [] }) {
                     onPageChange={fetchProspeks}
                     onTambahKlien={() => setShowTambahKlien(true)}
                     onViewDetail={handleViewDetail}
-                    onDelete={handleDelete}
+                    onDelete={handleDeleteClick}
                     onUpdate={handleUpdate}
                 />
             )}
@@ -160,12 +205,64 @@ export default function Index({ sales = [] }) {
                 sales={sales}
             />
 
+            {/* MODAL KONFIRMASI HAPUS CUSTOM (Sudah Rata Tengah) */}
+            {!!prospekToDelete && (
+                <div className="fixed inset-0 z-[99] flex items-center justify-center bg-black/50 px-4">
+                    <div className="bg-white rounded-2xl p-6 w-full max-w-sm text-center shadow-xl animate-in fade-in zoom-in-95">
+                        <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                            {/* Ikon Tempat Sampah Merah */}
+                            <svg
+                                className="w-7 h-7 text-red-600"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={1.8}
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
+                            </svg>
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-800 mb-2">
+                            Hapus Prospek?
+                        </h3>
+                        <p className="text-[13px] text-gray-500 mb-6">
+                            Apakah Anda yakin ingin menghapus data prospek{" "}
+                            <b>{prospekToDelete?.nama_client}</b>? Tindakan ini
+                            tidak dapat dibatalkan.
+                        </p>
+                        <div className="flex gap-3 justify-center">
+                            <button
+                                onClick={() => setProspekToDelete(null)}
+                                className="px-5 py-2.5 rounded-xl text-gray-600 bg-gray-100 hover:bg-gray-200 font-medium text-sm transition"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={executeDelete}
+                                className="px-5 py-2.5 rounded-xl text-white bg-red-600 hover:bg-red-700 font-medium text-sm transition shadow-sm"
+                            >
+                                Ya, Hapus Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {toast && (
                 <Toast
                     message={toast.message}
                     type={toast.type}
                     onClose={() => setToast(null)}
                 />
+            )}
+            {successMessage && (
+                <div className="fixed bottom-5 right-5 z-[1000] bg-green-600 text-white text-[13px] px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-bounce">
+                    <span className="font-bold text-base">✓</span>
+                    <span className="font-medium">{successMessage}</span>
+                </div>
             )}
         </>
     );

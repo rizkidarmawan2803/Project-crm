@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 const TABS = [
     { key: "info", label: "Informasi Umum" },
@@ -271,29 +272,31 @@ function TabKomunikasi({ prospekId }) {
 
 // ─── Komponen Utama ───────────────────────────────────────────────────────────
 
-export default function ProspekDetail({ prospek, onBack, onKonversi }) {
+export default function ProspekDetail({
+    prospek,
+    onBack,
+    onRefresh,
+    onKonversi,
+}) {
     const [tab, setTab] = useState(prospek.defaultTab || "info");
-    const [modalIngat, setModalIngat] = useState(false);
-    const [modalDeal, setModalDeal] = useState(false);
     const [converted, setConverted] = useState(false);
     const [showTolakModal, setShowTolakModal] = useState(false);
     const [alasanTolak, setAlasanTolak] = useState("");
     const [catatanLainnya, setCatatanLainnya] = useState("");
 
-    async function handleKonversi() {
-        const konfirmasi = window.confirm(
-            "Yakin ingin mengonversi prospek ini menjadi client?",
-        );
+    // State baru untuk Modal Deal dan Toast
+    const [showDealModal, setShowDealModal] = useState(false);
+    const [successMessage, setSuccessMessage] = useState(null);
 
-        if (!konfirmasi) return;
-
+    // Fungsi konversi ke Deal dengan Toast animasi
+    async function executeKonversi() {
         try {
             const csrfToken = document.cookie
                 .split("; ")
                 .find((r) => r.startsWith("XSRF-TOKEN="))
                 ?.split("=")[1];
 
-            // simpan status log
+            // Simpan status log
             await fetch(`/api/prospek/${prospek.id}/status-logs`, {
                 method: "POST",
                 headers: {
@@ -310,7 +313,7 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                 }),
             });
 
-            // convert client
+            // Convert client
             const res = await fetch(`/api/prospek/${prospek.id}/convert`, {
                 method: "PUT",
                 headers: {
@@ -332,19 +335,24 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
             }
 
             setConverted(true);
+            setShowDealModal(false); // Tutup pop-up UI Deal
 
-            if (onKonversi) {
-                onKonversi(json.data);
-            }
+            // Panggil Toast animasi Bounce
+            setSuccessMessage("Prospek berhasil dikonversi menjadi client.");
 
-            alert("Prospek berhasil dikonversi menjadi client.");
-
-            window.location.reload();
+            // Beri jeda sebentar agar user melihat animasi toast, lalu update data
+            setTimeout(() => {
+                if (onKonversi) onKonversi(json.data);
+                if (onRefresh) onRefresh();
+                setSuccessMessage(null);
+            }, 2500);
         } catch (error) {
             alert(error.message);
+            setShowDealModal(false);
         }
     }
 
+    // Fungsi tolak (Belum Tertarik) dengan Toast animasi
     async function handleTolak() {
         let catatan = alasanTolak;
 
@@ -353,7 +361,6 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                 alert("Silakan isi alasan lainnya.");
                 return;
             }
-
             catatan = catatanLainnya;
         }
 
@@ -385,11 +392,17 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                 throw new Error(json.message || "Gagal mengubah status.");
             }
 
-            setShowTolakModal(false);
+            setShowTolakModal(false); // Tutup pop-up alasan
 
-            alert("Prospek berhasil diubah menjadi Belum Tertarik.");
+            // Panggil Toast animasi Bounce
+            setSuccessMessage(
+                "Prospek berhasil diubah menjadi Belum Tertarik.",
+            );
 
-            window.location.reload();
+            setTimeout(() => {
+                if (onRefresh) onRefresh();
+                setSuccessMessage(null);
+            }, 2500);
         } catch (error) {
             alert(error.message);
         }
@@ -410,131 +423,6 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
         berhasil: "Berhasil",
         gagal: "Gagal",
     };
-
-    const TABS = [
-        { key: "info", label: "Informasi Umum" },
-        { key: "komun", label: "Riwayat Aktivitas" },
-    ];
-
-    // ─────────────────────────────────────────────────────────────
-    // KOMPONEN TAB UPDATE STATUS
-    // ─────────────────────────────────────────────────────────────
-
-    function TabUpdateStatus({ prospek, onRefresh }) {
-        const [status, setStatus] = useState(prospek.lead_status || "Baru");
-        const [loading, setLoading] = useState(false);
-        const [message, setMessage] = useState("");
-
-        const STATUS_OPTIONS = [
-            { value: "baru", label: "Baru" },
-            { value: "dihubungi", label: "Dihubungi" },
-            { value: "negosiasi", label: "Negosiasi" },
-        ];
-
-        async function handleSubmit(e) {
-            e.preventDefault();
-            setLoading(true);
-            setMessage("");
-
-            try {
-                const res = await fetch(`/api/prospek/${prospek.id}`, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                    },
-                    credentials: "same-origin",
-                    body: JSON.stringify({
-                        lead_status: status,
-                    }),
-                });
-
-                const json = await res.json();
-
-                if (!res.ok) {
-                    throw new Error(
-                        json.message || "Gagal memperbarui status prospek.",
-                    );
-                }
-
-                setMessage("Status prospek berhasil diperbarui.");
-
-                // Refresh data dari parent component
-                if (onRefresh) {
-                    onRefresh();
-                }
-            } catch (error) {
-                setMessage(error.message);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        return (
-            <div>
-                <form onSubmit={handleSubmit} className="max-w-lg">
-                    {/* Nama Prospek */}
-                    <div className="mb-5">
-                        <label className="block text-[13px] font-medium text-gray-600 mb-2">
-                            Nama Prospek
-                        </label>
-                        <input
-                            type="text"
-                            value={prospek.nama_client || ""}
-                            disabled
-                            className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-700"
-                        />
-                    </div>
-
-                    {/* Status */}
-                    <div className="mb-5">
-                        <label className="block text-[13px] font-medium text-gray-600 mb-2">
-                            Status Prospek
-                        </label>
-                        <select
-                            value={status}
-                            onChange={(e) => setStatus(e.target.value)}
-                            className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            {STATUS_OPTIONS.map((item) => (
-                                <option key={item.value} value={item.value}>
-                                    {item.label}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Pesan */}
-                    {message && (
-                        <div className="mb-4 px-4 py-3 rounded-lg bg-blue-50 text-blue-700 text-sm">
-                            {message}
-                        </div>
-                    )}
-
-                    {/* Tombol */}
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="px-5 py-2.5 rounded-lg bg-blue-700 text-white hover:bg-blue-800 disabled:opacity-50 transition"
-                    >
-                        {loading ? "Menyimpan..." : "Simpan Perubahan"}
-                    </button>
-                </form>
-            </div>
-        );
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // TAMBAHKAN DI BAGIAN RENDER TAB
-    // Letakkan di dalam <div className="p-7">
-    // setelah tab "komun"
-    // ─────────────────────────────────────────────────────────────
-
-    {
-        tab === "update" && (
-            <TabUpdateStatus prospek={prospek} onRefresh={onBack} />
-        );
-    }
 
     return (
         <div>
@@ -642,9 +530,9 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
 
                 {!converted && prospek.lead_status === "Negosiasi" ? (
                     <div className="flex items-center gap-2">
-                        {/* Tombol Konversi */}
+                        {/* Tombol Konversi Deal memanggil Modal UI */}
                         <button
-                            onClick={handleKonversi}
+                            onClick={() => setShowDealModal(true)}
                             className="flex-shrink-0 flex items-center gap-1.5 px-5 py-2.5 rounded-lg text-[14px] font-medium bg-green-700 text-white hover:bg-green-800 transition"
                         >
                             Konversi ke Client
@@ -780,9 +668,10 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                         </div>
                     )}
 
+                    {/* MODAL BELUM TERTARIK */}
                     {showTolakModal && (
                         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-                            <div className="bg-white rounded-xl w-full max-w-lg p-6">
+                            <div className="bg-white rounded-xl w-full max-w-lg p-6 animate-in fade-in zoom-in-95">
                                 <h3 className="text-lg font-semibold mb-4">
                                     Alasan Belum Tertarik
                                 </h3>
@@ -867,7 +756,6 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                                     >
                                         Batal
                                     </button>
-
                                     <button
                                         onClick={handleTolak}
                                         className="px-4 py-2 bg-red-600 text-white rounded-lg"
@@ -885,6 +773,45 @@ export default function ProspekDetail({ prospek, onBack, onKonversi }) {
                     )}
                 </div>
             </div>
+
+            {/* MODAL KONFIRMASI DEAL (MENGGANTIKAN ALERT WINDOW) */}
+            {showDealModal && (
+                <div className="fixed inset-0 z-[99] flex items-center justify-center bg-black/50 px-4">
+                    <div className="bg-white rounded-2xl p-6 w-full max-w-sm text-center shadow-xl animate-in fade-in zoom-in-95">
+                        <h3 className="text-lg font-bold text-gray-800 mb-2">
+                            Konversi ke Pelanggan?
+                        </h3>
+                        <p className="text-[13px] text-gray-500 mb-6">
+                            Apakah Anda yakin prospek{" "}
+                            <b>{prospek.nama_client}</b> telah sepakat dan
+                            berhasil menjadi pelanggan? Data ini akan
+                            dipindahkan ke daftar Pelanggan.
+                        </p>
+                        <div className="flex gap-3 justify-center">
+                            <button
+                                onClick={() => setShowDealModal(false)}
+                                className="px-5 py-2.5 rounded-xl text-gray-600 bg-gray-100 hover:bg-gray-200 font-medium text-sm transition"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={executeKonversi}
+                                className="px-5 py-2.5 rounded-xl text-white bg-green-600 hover:bg-green-700 font-medium text-sm transition shadow-sm"
+                            >
+                                Ya, Deal!
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* TOAST ANIMASI BOUNCE (UNTUK DEAL & BELUM TERTARIK) */}
+            {successMessage && (
+                <div className="fixed bottom-5 right-5 z-[1000] bg-green-600 text-white text-[13px] px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-bounce">
+                    <span className="font-bold text-base">✓</span>
+                    <span className="font-medium">{successMessage}</span>
+                </div>
+            )}
         </div>
     );
 }
