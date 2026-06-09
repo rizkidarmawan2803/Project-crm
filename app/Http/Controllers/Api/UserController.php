@@ -53,7 +53,7 @@ class UserController extends Controller
             'email'      => 'required|email|unique:users,email',
             'password'   => 'required|min:8',
             'is_admin'   => 'required|boolean',
-        ],[
+        ], [
             'first_name.required' => 'Nama depan wajib diisi.',
             'email.required'      => 'Email wajib diisi.',
             'email.email'         => 'Format email tidak valid.',
@@ -122,6 +122,24 @@ class UserController extends Controller
             'status'  => 'success',
             'message' => 'User berhasil diupdate',
             'user'    => $user
+        ]);
+    }
+
+    public function resetPassword(Request $request, $id)
+    {
+        $request->validate([
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $user = User::findOrFail($id);
+
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Password berhasil direset',
         ]);
     }
 

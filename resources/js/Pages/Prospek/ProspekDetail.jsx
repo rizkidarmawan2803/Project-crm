@@ -280,6 +280,7 @@ export default function ProspekDetail({
 }) {
     const [tab, setTab] = useState(prospek.defaultTab || "info");
     const [converted, setConverted] = useState(false);
+    const [currentStatus, setCurrentStatus] = useState(prospek.lead_status);
     const [showTolakModal, setShowTolakModal] = useState(false);
     const [alasanTolak, setAlasanTolak] = useState("");
     const [catatanLainnya, setCatatanLainnya] = useState("");
@@ -393,6 +394,7 @@ export default function ProspekDetail({
             }
 
             setShowTolakModal(false); // Tutup pop-up alasan
+            setCurrentStatus("Belum Tertarik");
 
             // Panggil Toast animasi Bounce
             setSuccessMessage(
@@ -503,12 +505,12 @@ export default function ProspekDetail({
                             <h2 className="text-[20px] font-bold text-gray-900 leading-tight">
                                 {prospek.nama_client}
                             </h2>
-                            {prospek.lead_status && (
+                            {currentStatus &&  (
                                 <span
-                                    className={`px-2.5 py-0.5 rounded-full text-[12px] font-medium ${STATUS_BADGE[prospek.lead_status] ?? "bg-gray-100 text-gray-600"}`}
+                                    className={`px-2.5 py-0.5 rounded-full text-[12px] font-medium ${STATUS_BADGE[currentStatus] ?? "bg-gray-100 text-gray-600"}`}
                                 >
-                                    {STATUS_LABEL[prospek.lead_status] ??
-                                        prospek.lead_status}
+                                    {STATUS_LABEL[currentStatus] ??
+                                        currentStatus}
                                 </span>
                             )}
                         </div>
@@ -528,7 +530,7 @@ export default function ProspekDetail({
                     </div>
                 </div>
 
-                {!converted && prospek.lead_status === "Negosiasi" ? (
+                {!converted && currentStatus === "Negosiasi" ? (
                     <div className="flex items-center gap-2">
                         {/* Tombol Konversi Deal memanggil Modal UI */}
                         <button
