@@ -393,13 +393,28 @@ export default function ManajemenPengguna() {
                                 </div>
 
                                 <div className="flex justify-end gap-2 border-t border-slate-100 bg-slate-50 px-5 py-4">
-                                    <button type="button" onClick={() => { setShowAddModal(false); setShowEditModal(false); }} 
-                                        className="px-4 py-2.5 rounded-xl text-gray-700 bg-gray-100 hover:bg-gray-200 font-semibold text-[13px] transition">
+                                    <button 
+                                        type="button" 
+                                        onClick={() => { setShowAddModal(false); setShowEditModal(false); }} 
+                                        className="px-4 py-2.5 rounded-xl text-gray-700 bg-gray-100 hover:bg-gray-200 font-semibold text-[13px] transition"
+                                    >
                                         Batal
                                     </button>
-                                    <button type="submit" className="px-5 py-2.5 rounded-xl bg-blue-600 font-semibold text-[13px] text-white hover:bg-blue-700 transition shadow-sm">
-                                        Simpan Data
-                                    </button>
+
+                                    {(showAddModal || (showEditModal && (
+                                        form.first_name !== selectedUser?.first_name ||
+                                        form.last_name !== (selectedUser?.last_name || "") ||
+                                        form.email !== selectedUser?.email ||
+                                        form.is_admin !== selectedUser?.is_admin ||
+                                        form.status !== selectedUser?.status
+                                    ))) && (
+                                        <button 
+                                            type="submit" 
+                                            className="px-5 py-2.5 rounded-xl bg-blue-600 font-semibold text-[13px] text-white hover:bg-blue-700 transition shadow-sm"
+                                        >
+                                            Simpan Data
+                                        </button>
+                                    )}
                                 </div>
                             </form>
                         </div>
